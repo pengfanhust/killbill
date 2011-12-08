@@ -67,11 +67,11 @@ public class TestCaseChange {
 		}
 	}
 	@Test(enabled=true)
-	public void testBasic(){
+	public void testBasic() throws CatalogApiException{
 		MockCatalog cat = new MockCatalog();
 
 		DefaultProduct product1 = cat.getProducts()[0];
-		DefaultPriceList priceList1 = cat.getPriceListFromName(PriceListSet.DEFAULT_PRICELIST_NAME);
+		DefaultPriceList priceList1 = cat.findPriceList(PriceListSet.DEFAULT_PRICELIST_NAME);
 
 		DefaultProduct product2 = cat.getProducts()[2];
 		DefaultPriceList priceList2 = cat.getPriceLists().getChildPriceLists()[1];
@@ -157,11 +157,11 @@ public class TestCaseChange {
 	}
 	
 	@Test(enabled=true)
-	public void testWildcardFromProduct(){
+	public void testWildcardFromProduct() throws CatalogApiException{
 		MockCatalog cat = new MockCatalog();
 
 		DefaultProduct product1 = cat.getProducts()[0];
-		DefaultPriceList priceList1 = cat.getPriceListFromName(PriceListSet.DEFAULT_PRICELIST_NAME);
+		DefaultPriceList priceList1 = cat.findPriceList(PriceListSet.DEFAULT_PRICELIST_NAME);
 
 		DefaultProduct product2 = cat.getProducts()[2];
 		DefaultPriceList priceList2 = cat.getPriceLists().getChildPriceLists()[1];
@@ -240,11 +240,11 @@ public class TestCaseChange {
 	}
 	
 	@Test(enabled=true)
-	public void testWildcardToProduct(){
+	public void testWildcardToProduct() throws CatalogApiException{
 		MockCatalog cat = new MockCatalog();
 
 		DefaultProduct product1 = cat.getProducts()[0];
-		DefaultPriceList priceList1 = cat.getPriceListFromName(PriceListSet.DEFAULT_PRICELIST_NAME);
+		DefaultPriceList priceList1 = cat.findPriceList(PriceListSet.DEFAULT_PRICELIST_NAME);
 
 		DefaultProduct product2 = cat.getProducts()[2];
 		DefaultPriceList priceList2 = cat.getPriceLists().getChildPriceLists()[1];
@@ -330,11 +330,11 @@ public class TestCaseChange {
 	}
 	
 	@Test(enabled=true)
-	public void testWildcardFromProductCategory(){
+	public void testWildcardFromProductCategory() throws CatalogApiException{
 		MockCatalog cat = new MockCatalog();
 
 		DefaultProduct product1 = cat.getProducts()[0];
-		DefaultPriceList priceList1 = cat.getPriceListFromName(PriceListSet.DEFAULT_PRICELIST_NAME);
+		DefaultPriceList priceList1 = cat.findPriceList(PriceListSet.DEFAULT_PRICELIST_NAME);
 
 		DefaultProduct product2 = cat.getProducts()[2];
 		DefaultPriceList priceList2 = cat.getPriceLists().getChildPriceLists()[1];
@@ -420,11 +420,11 @@ public class TestCaseChange {
 	}
 	
 	@Test(enabled=true)
-	public void testWildcardToProductCategory(){
+	public void testWildcardToProductCategory() throws CatalogApiException{
 		MockCatalog cat = new MockCatalog();
 
 		DefaultProduct product1 = cat.getProducts()[0];
-		DefaultPriceList priceList1 = cat.getPriceListFromName(PriceListSet.DEFAULT_PRICELIST_NAME);
+		DefaultPriceList priceList1 = cat.findPriceList(PriceListSet.DEFAULT_PRICELIST_NAME);
 
 		DefaultProduct product2 = cat.getProducts()[2];
 		DefaultPriceList priceList2 = cat.getPriceLists().getChildPriceLists()[1];
@@ -510,11 +510,11 @@ public class TestCaseChange {
 	}
 	
 	@Test(enabled=true)
-	public void testWildcardFromBillingPeriod(){
+	public void testWildcardFromBillingPeriod() throws CatalogApiException{
 		MockCatalog cat = new MockCatalog();
 
 		DefaultProduct product1 = cat.getProducts()[0];
-		DefaultPriceList priceList1 = cat.getPriceListFromName(PriceListSet.DEFAULT_PRICELIST_NAME);
+		DefaultPriceList priceList1 = cat.findPriceList(PriceListSet.DEFAULT_PRICELIST_NAME);
 
 		DefaultProduct product2 = cat.getProducts()[2];
 		DefaultPriceList priceList2 = cat.getPriceLists().getChildPriceLists()[1];
@@ -601,11 +601,11 @@ public class TestCaseChange {
 	
 	
 	@Test(enabled=true)
-	public void testWildCardToBillingPeriod(){
+	public void testWildCardToBillingPeriod() throws CatalogApiException{
 		MockCatalog cat = new MockCatalog();
 
 		DefaultProduct product1 = cat.getProducts()[0];
-		DefaultPriceList priceList1 = cat.getPriceListFromName(PriceListSet.DEFAULT_PRICELIST_NAME);
+		DefaultPriceList priceList1 = cat.findPriceList(PriceListSet.DEFAULT_PRICELIST_NAME);
 
 		DefaultProduct product2 = cat.getProducts()[2];
 		DefaultPriceList priceList2 = cat.getPriceLists().getChildPriceLists()[1];
@@ -691,11 +691,11 @@ public class TestCaseChange {
 	}
 	
 	@Test(enabled=true)
-	public void testWildCardFromPriceList(){
+	public void testWildCardFromPriceList() throws CatalogApiException{
 		MockCatalog cat = new MockCatalog();
 
 		DefaultProduct product1 = cat.getProducts()[0];
-		DefaultPriceList priceList1 = cat.getPriceListFromName(PriceListSet.DEFAULT_PRICELIST_NAME);
+		DefaultPriceList priceList1 = cat.findPriceList(PriceListSet.DEFAULT_PRICELIST_NAME);
 
 		DefaultProduct product2 = cat.getProducts()[2];
 		DefaultPriceList priceList2 = cat.getPriceLists().getChildPriceLists()[1];
@@ -781,11 +781,11 @@ public class TestCaseChange {
 	}
 	
 	@Test(enabled=true)
-	public void testWildcardToPriceList(){
+	public void testWildcardToPriceList() throws CatalogApiException{
 		MockCatalog cat = new MockCatalog();
 
 		DefaultProduct product1 = cat.getProducts()[0];
-		DefaultPriceList priceList1 = cat.getPriceListFromName(PriceListSet.DEFAULT_PRICELIST_NAME);
+		DefaultPriceList priceList1 = cat.findPriceList(PriceListSet.DEFAULT_PRICELIST_NAME);
 
 		DefaultProduct product2 = cat.getProducts()[2];
 		DefaultPriceList priceList2 = cat.getPriceLists().getChildPriceLists()[1];
@@ -871,11 +871,11 @@ public class TestCaseChange {
 	}
 	
 	@Test(enabled=true)
-	public void testWildcardPlanPhase(){
+	public void testWildcardPlanPhase() throws CatalogApiException{
 		MockCatalog cat = new MockCatalog();
 
 		DefaultProduct product1 = cat.getProducts()[0];
-		DefaultPriceList priceList1 = cat.getPriceListFromName(PriceListSet.DEFAULT_PRICELIST_NAME);
+		DefaultPriceList priceList1 = cat.findPriceList(PriceListSet.DEFAULT_PRICELIST_NAME);
 
 		DefaultProduct product2 = cat.getProducts()[2];
 		DefaultPriceList priceList2 = cat.getPriceLists().getChildPriceLists()[1];
@@ -966,7 +966,7 @@ public class TestCaseChange {
 		MockCatalog cat = new MockCatalog();
 
 		DefaultProduct product1 = cat.getProducts()[0];
-		DefaultPriceList priceList1 = cat.getPriceListFromName(PriceListSet.DEFAULT_PRICELIST_NAME);
+		DefaultPriceList priceList1 = cat.findPriceList(PriceListSet.DEFAULT_PRICELIST_NAME);
 
 		DefaultProduct product2 = cat.getProducts()[2];
 		DefaultPriceList priceList2 = cat.getPriceLists().getChildPriceLists()[1];

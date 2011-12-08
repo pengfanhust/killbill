@@ -23,13 +23,14 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import com.ning.billing.catalog.api.BillingPeriod;
+import com.ning.billing.catalog.api.CatalogApiException;
 import com.ning.billing.catalog.api.PriceListSet;
 import com.ning.billing.catalog.api.PhaseType;
 import com.ning.billing.catalog.api.ProductCategory;
 
 public class TestPriceListSet {
 	@Test(enabled=true)
-	public void testOverriding() {
+	public void testOverriding() throws CatalogApiException {
 		DefaultProduct foo = new DefaultProduct("Foo", ProductCategory.BASE);
 		DefaultProduct bar = new DefaultProduct("Bar", ProductCategory.BASE);
 		DefaultPlan[] defaultPlans = new DefaultPlan[]{ 
@@ -48,13 +49,13 @@ public class TestPriceListSet {
 		};
 		DefaultPriceListSet set = new DefaultPriceListSet(defaultPriceList, childPriceLists);
 		
-		Assert.assertEquals(set.getPlanListFrom(PriceListSet.DEFAULT_PRICELIST_NAME, foo, BillingPeriod.ANNUAL).getFinalPhase().getPhaseType(), PhaseType.EVERGREEN);
-		Assert.assertEquals(set.getPlanListFrom(PriceListSet.DEFAULT_PRICELIST_NAME, foo, BillingPeriod.MONTHLY).getFinalPhase().getPhaseType(), PhaseType.EVERGREEN);
-		Assert.assertEquals(set.getPlanListFrom("child", foo, BillingPeriod.ANNUAL).getFinalPhase().getPhaseType(), PhaseType.DISCOUNT);
-		Assert.assertEquals(set.getPlanListFrom("child", foo, BillingPeriod.MONTHLY).getFinalPhase().getPhaseType(), PhaseType.EVERGREEN);
+		Assert.assertEquals(set.findPlan(PriceListSet.DEFAULT_PRICELIST_NAME, foo, BillingPeriod.ANNUAL).getFinalPhase().getPhaseType(), PhaseType.EVERGREEN);
+		Assert.assertEquals(set.findPlan(PriceListSet.DEFAULT_PRICELIST_NAME, foo, BillingPeriod.MONTHLY).getFinalPhase().getPhaseType(), PhaseType.EVERGREEN);
+		Assert.assertEquals(set.findPlan("child", foo, BillingPeriod.ANNUAL).getFinalPhase().getPhaseType(), PhaseType.DISCOUNT);
+		Assert.assertEquals(set.findPlan("child", foo, BillingPeriod.MONTHLY).getFinalPhase().getPhaseType(), PhaseType.EVERGREEN);
 	}
 	
-	public void testForNullBillingPeriod() {
+	public void testForNullBillingPeriod() throws CatalogApiException {
 		DefaultProduct foo = new DefaultProduct("Foo", ProductCategory.BASE);
 		DefaultProduct bar = new DefaultProduct("Bar", ProductCategory.BASE);
 		DefaultPlan[] defaultPlans = new DefaultPlan[]{ 
@@ -74,10 +75,10 @@ public class TestPriceListSet {
 		};
 		DefaultPriceListSet set = new DefaultPriceListSet(defaultPriceList, childPriceLists);
 		
-		Assert.assertEquals(set.getPlanListFrom("child", foo, BillingPeriod.ANNUAL).getFinalPhase().getPhaseType(), PhaseType.DISCOUNT);
-		Assert.assertEquals(set.getPlanListFrom("child", foo, BillingPeriod.MONTHLY).getFinalPhase().getPhaseType(), PhaseType.EVERGREEN);
-		Assert.assertEquals(set.getPlanListFrom(PriceListSet.DEFAULT_PRICELIST_NAME, foo, BillingPeriod.ANNUAL).getFinalPhase().getPhaseType(), PhaseType.EVERGREEN);
-		Assert.assertEquals(set.getPlanListFrom(PriceListSet.DEFAULT_PRICELIST_NAME, foo, BillingPeriod.MONTHLY).getFinalPhase().getPhaseType(), PhaseType.EVERGREEN);
+		Assert.assertEquals(set.findPlan("child", foo, BillingPeriod.ANNUAL).getFinalPhase().getPhaseType(), PhaseType.DISCOUNT);
+		Assert.assertEquals(set.findPlan("child", foo, BillingPeriod.MONTHLY).getFinalPhase().getPhaseType(), PhaseType.EVERGREEN);
+		Assert.assertEquals(set.findPlan(PriceListSet.DEFAULT_PRICELIST_NAME, foo, BillingPeriod.ANNUAL).getFinalPhase().getPhaseType(), PhaseType.EVERGREEN);
+		Assert.assertEquals(set.findPlan(PriceListSet.DEFAULT_PRICELIST_NAME, foo, BillingPeriod.MONTHLY).getFinalPhase().getPhaseType(), PhaseType.EVERGREEN);
 	}
 
 }

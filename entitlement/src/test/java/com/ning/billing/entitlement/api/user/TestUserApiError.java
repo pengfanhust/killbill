@@ -29,7 +29,6 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Stage;
 import com.ning.billing.ErrorCode;
-import com.ning.billing.catalog.DefaultPriceListSet;
 import com.ning.billing.catalog.api.BillingPeriod;
 import com.ning.billing.catalog.api.Duration;
 import com.ning.billing.catalog.api.PlanPhase;
@@ -57,10 +56,9 @@ public class TestUserApiError extends TestUserApiBase {
         // TODO: MARTIN TO FIX WITH CORRECT ERROR CODE. RIGHT NOW NPE
 
         // WRONG BILLING PERIOD
-        //tCreateSubscriptionInternal(bundle.getId(), "Shotgun", null, IPriceListSet.DEFAULT_PRICELIST_NAME, ErrorCode.);
+        tCreateSubscriptionInternal(bundle.getId(), "Shotgun", null, PriceListSet.DEFAULT_PRICELIST_NAME, ErrorCode.CAT_PLAN_NOT_FOUND);
         // WRONG PLAN SET
-        //tCreateSubscriptionInternal(bundle.getId(), "Shotgun", BillingPeriod.ANNUAL, null, ErrorCode.);
-        //tCreateSubscriptionInternal(bundle.getId(), "Shotgun", BillingPeriod.ANNUAL, "Whatever", ErrorCode.);
+        tCreateSubscriptionInternal(bundle.getId(), "Shotgun", BillingPeriod.ANNUAL, "Whatever", ErrorCode.CAT_PRICELIST_NOT_FOUND);
 
     }
 

@@ -46,7 +46,7 @@ public abstract class Case<T> extends ValidatingConfig<StandaloneCatalog> {
 		return (product         == null || product.equals(c.findProduct(planPhase.getProductName()))) &&
 		(productCategory == null || productCategory.equals(planPhase.getProductCategory())) &&
 		(billingPeriod   == null || billingPeriod.equals(planPhase.getBillingPeriod())) &&
-		(priceList       == null || priceList.equals(c.getPriceListFromName(planPhase.getPriceListName())));
+		(priceList       == null || priceList.equals(c.findPriceList(planPhase.getPriceListName())));
 	}
 
 	public static <K> K getResult(Case<K>[] cases, PlanSpecifier planSpec, StandaloneCatalog catalog) throws CatalogApiException {

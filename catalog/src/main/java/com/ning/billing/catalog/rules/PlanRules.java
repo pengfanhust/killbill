@@ -75,7 +75,7 @@ public class PlanRules extends ValidatingConfig<StandaloneCatalog>  {
 	}
 
 	public PlanChangeResult planChange(PlanPhaseSpecifier from, PlanSpecifier to, StandaloneCatalog catalog) throws CatalogApiException {
-		DefaultPriceList priceList = catalog.getPriceListFromName(to.getPriceListName());
+		DefaultPriceList priceList = catalog.findPriceList(to.getPriceListName());
 		if( priceList== null ) {
 			priceList = findPriceList(from.toPlanSpecifier(), catalog);
 			to = new PlanSpecifier(to.getProductName(), to.getProductCategory(), to.getBillingPeriod(), priceList.getName());
@@ -110,7 +110,7 @@ public class PlanRules extends ValidatingConfig<StandaloneCatalog>  {
 	private DefaultPriceList findPriceList(PlanSpecifier specifier, StandaloneCatalog catalog) throws CatalogApiException {
 		DefaultPriceList result = Case.getResult(priceListCase, specifier, catalog);
 		if (result == null) {
-			result = catalog.getPriceListFromName(specifier.getPriceListName());
+			result = catalog.findPriceList(specifier.getPriceListName());
 		}
 		return result;
 	}

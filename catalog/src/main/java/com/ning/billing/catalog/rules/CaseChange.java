@@ -79,8 +79,8 @@ public abstract class CaseChange<T>  extends ValidatingConfig<StandaloneCatalog>
 				(toProduct           == null || toProduct.equals(catalog.findProduct(to.getProductName()))) &&
 				(toProductCategory   == null || toProductCategory.equals(to.getProductCategory())) &&
 				(toBillingPeriod     == null || toBillingPeriod.equals(to.getBillingPeriod())) &&
-				(fromPriceList       == null || fromPriceList.equals(catalog.getPriceListFromName(from.getPriceListName()))) &&
-				(toPriceList         == null || toPriceList.equals(catalog.getPriceListFromName(to.getPriceListName())))
+				(fromPriceList       == null || fromPriceList.equals(catalog.findPriceList(from.getPriceListName()))) &&
+				(toPriceList         == null || toPriceList.equals(catalog.findPriceList(to.getPriceListName())))
 				) {
 			return getResult();
 		}

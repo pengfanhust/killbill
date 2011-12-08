@@ -59,7 +59,7 @@ public enum ErrorCode {
     		"pricelist '%s') to (product: '%s', billing period: '%s', pricelist '%s'). This transition is not allowed by catalog rules"),
 
 	/*
-	 * Price list
+	 * Prices 
 	 */
 
 	/*Attempt to reference a price that is not present - should only happen if it is a currency not available in the catalog */
@@ -82,7 +82,12 @@ public enum ErrorCode {
     /*
      * Phases
      */
-    CAT_NO_SUCH_PHASE(2040,"Could not find any phases named '%s'")
+    CAT_NO_SUCH_PHASE(2040,"Could not find any phases named '%s'"), 
+    
+    /*
+     * Pricelist
+     */
+    CAT_PRICELIST_NOT_FOUND(2050,"Could not find price list named '%s'")
     ;
 
     private int code;

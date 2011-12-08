@@ -61,7 +61,7 @@ public class TestCase {
 		MockCatalog cat = new MockCatalog();
 
 		DefaultProduct product = cat.getProducts()[0];
-		DefaultPriceList priceList = cat.getPriceListFromName(PriceListSet.DEFAULT_PRICELIST_NAME);
+		DefaultPriceList priceList = cat.findPriceList(PriceListSet.DEFAULT_PRICELIST_NAME);
 
 
 		CaseResult cr = new CaseResult(
@@ -83,7 +83,7 @@ public class TestCase {
 		MockCatalog cat = new MockCatalog();
 
 		DefaultProduct product = cat.getProducts()[0];
-		DefaultPriceList priceList = cat.getPriceListFromName(PriceListSet.DEFAULT_PRICELIST_NAME);
+		DefaultPriceList priceList = cat.findPriceList(PriceListSet.DEFAULT_PRICELIST_NAME);
 
 
 		CaseResult cr = new CaseResult(
@@ -106,7 +106,7 @@ public class TestCase {
 		MockCatalog cat = new MockCatalog();
 
 		DefaultProduct product = cat.getProducts()[0];
-		DefaultPriceList priceList = cat.getPriceListFromName(PriceListSet.DEFAULT_PRICELIST_NAME);
+		DefaultPriceList priceList = cat.findPriceList(PriceListSet.DEFAULT_PRICELIST_NAME);
 
 
 		CaseResult cr = new CaseResult(
@@ -129,7 +129,7 @@ public class TestCase {
 		MockCatalog cat = new MockCatalog();
 
 		DefaultProduct product = cat.getProducts()[0];
-		DefaultPriceList priceList = cat.getPriceListFromName(PriceListSet.DEFAULT_PRICELIST_NAME);
+		DefaultPriceList priceList = cat.findPriceList(PriceListSet.DEFAULT_PRICELIST_NAME);
 
 
 		CaseResult cr = new CaseResult(
@@ -152,7 +152,7 @@ public class TestCase {
 		MockCatalog cat = new MockCatalog();
 
 		DefaultProduct product = cat.getProducts()[0];
-		DefaultPriceList priceList = cat.getPriceListFromName(PriceListSet.DEFAULT_PRICELIST_NAME);
+		DefaultPriceList priceList = cat.findPriceList(PriceListSet.DEFAULT_PRICELIST_NAME);
 
 
 		CaseResult cr = new CaseResult(
@@ -175,7 +175,7 @@ public class TestCase {
 		MockCatalog cat = new MockCatalog();
 
 		DefaultProduct product = cat.getProducts()[0];
-		DefaultPriceList priceList = cat.getPriceListFromName(PriceListSet.DEFAULT_PRICELIST_NAME);
+		DefaultPriceList priceList = cat.findPriceList(PriceListSet.DEFAULT_PRICELIST_NAME);
 
 
 		CaseResult cr0 = new CaseResult(

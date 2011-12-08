@@ -58,9 +58,9 @@ public class TestPlanRules {
 	}
 
 	@Test
-	public void testCannotChangeToSamePlan() {
+	public void testCannotChangeToSamePlan() throws CatalogApiException {
 		DefaultProduct product1 = cat.getProducts()[0];
-		DefaultPriceList priceList1 = cat.getPriceListFromName(PriceListSet.DEFAULT_PRICELIST_NAME);
+		DefaultPriceList priceList1 = cat.findPriceList(PriceListSet.DEFAULT_PRICELIST_NAME);
 		
 		PlanPhaseSpecifier from = new PlanPhaseSpecifier(product1.getName(), product1.getCategory(), BillingPeriod.MONTHLY, priceList1.getName(), PhaseType.EVERGREEN);
 		PlanSpecifier to = new PlanSpecifier(product1.getName(), product1.getCategory(), BillingPeriod.MONTHLY, priceList1.getName());
@@ -77,9 +77,9 @@ public class TestPlanRules {
 	}
 	
 	@Test
-	public void testExistingPriceListIsKept() {
+	public void testExistingPriceListIsKept() throws CatalogApiException {
 		DefaultProduct product1 = cat.getProducts()[0];
-		DefaultPriceList priceList1 = cat.getPriceListFromName(PriceListSet.DEFAULT_PRICELIST_NAME);
+		DefaultPriceList priceList1 = cat.findPriceList(PriceListSet.DEFAULT_PRICELIST_NAME);
 		
 		PlanPhaseSpecifier from = new PlanPhaseSpecifier(product1.getName(), product1.getCategory(), BillingPeriod.MONTHLY, priceList1.getName(), PhaseType.EVERGREEN);
 		PlanSpecifier to = new PlanSpecifier(product1.getName(), product1.getCategory(), BillingPeriod.ANNUAL, priceList1.getName());
@@ -102,10 +102,10 @@ public class TestPlanRules {
 	
 	
 	@Test
-	public void testBaseCase() {
+	public void testBaseCase()  throws CatalogApiException{
 		DefaultProduct product1 = cat.getProducts()[0];
 		DefaultProduct product2 = cat.getProducts()[1];
-		DefaultPriceList priceList1 = cat.getPriceListFromName(PriceListSet.DEFAULT_PRICELIST_NAME);
+		DefaultPriceList priceList1 = cat.findPriceList(PriceListSet.DEFAULT_PRICELIST_NAME);
 		DefaultPriceList priceList2 = cat.getPriceLists().getChildPriceLists()[0];
 		
 		PlanPhaseSpecifier from = new PlanPhaseSpecifier(product1.getName(), product1.getCategory(), BillingPeriod.MONTHLY, priceList1.getName(), PhaseType.EVERGREEN);

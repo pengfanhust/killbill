@@ -120,7 +120,7 @@ public class StandaloneCatalog extends ValidatingConfig<StandaloneCatalog> imple
 		return planRules;
 	}
 	
-	public DefaultPriceList getPriceListFromName(String priceListName) {
+	public DefaultPriceList findPriceList(String priceListName) throws CatalogApiException {
 		return priceLists.findPriceListFrom(priceListName);
 	}
 	
@@ -140,9 +140,9 @@ public class StandaloneCatalog extends ValidatingConfig<StandaloneCatalog> imple
 	@Override
 	public DefaultPlan findPlan(String productName, BillingPeriod period, String priceListName) throws CatalogApiException {
 		Product product = findProduct(productName);
-		DefaultPlan result = priceLists.getPlanListFrom(priceListName, product, period);
+		DefaultPlan result = priceLists.findPlan(priceListName, product, period);
 		if ( result == null) {
-			throw new CatalogApiException(ErrorCode.CAT_PLAN_NOT_FOUND, productName, period.toString(), priceListName);
+			throw new CatalogApiException(ErrorCode.CAT_PLAN_NOT_FOUND, productName, period, priceListName);
 		}
 		return result;
 	}
