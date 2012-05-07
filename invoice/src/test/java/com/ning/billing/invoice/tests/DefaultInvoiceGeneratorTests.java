@@ -22,14 +22,13 @@ import static org.testng.Assert.assertNull;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
 
-import com.ning.billing.invoice.api.InvoiceItem;
-import com.ning.billing.invoice.model.DefaultInvoicePayment;
+import junit.framework.Assert;
+
 import org.joda.time.DateTime;
 import org.testng.annotations.Test;
 
@@ -50,8 +49,10 @@ import com.ning.billing.entitlement.api.billing.BillingModeType;
 import com.ning.billing.entitlement.api.user.Subscription;
 import com.ning.billing.invoice.api.Invoice;
 import com.ning.billing.invoice.api.InvoiceApiException;
+import com.ning.billing.invoice.api.InvoiceItem;
 import com.ning.billing.invoice.model.BillingEventSet;
 import com.ning.billing.invoice.model.DefaultInvoiceGenerator;
+import com.ning.billing.invoice.model.DefaultInvoicePayment;
 import com.ning.billing.invoice.model.FixedPriceInvoiceItem;
 import com.ning.billing.invoice.model.InvoiceGenerator;
 import com.ning.billing.invoice.model.RecurringInvoiceItem;
@@ -783,6 +784,134 @@ public class DefaultInvoiceGeneratorTests extends InvoicingTestBase {
         assertEquals(invoice3.getNumberOfItems(), 5);
         // -4.50 -18 - 10 (to correct the previous 2 invoices) + 4.50 + 13
         assertEquals(invoice3.getTotalAmount().compareTo(FIFTEEN.negate()), 0);
+    }
+
+    @Test(groups = {"fast", "invoicing"})
+    public void testPhasedAddOnsInvoiceGeneration() throws CatalogApiException, InvoiceApiException {
+        /////////////////////////////////////////////
+        //First define some stuff we need 
+        /////////////////////////////////////////////
+        BillingEventSet events = new BillingEventSet();
+        
+        DateTime april25 = new DateTime(2012, 4, 25, 0, 0, 0, 0);
+        DateTime may25 = new DateTime(2012, 5, 25, 0, 0, 0, 0);
+        DateTime may28 = new DateTime(2012, 5, 28, 0, 0, 0, 0);
+        DateTime june2 = new DateTime(2012, 6, 2, 0, 0, 0, 0);
+ 
+        
+        MockInternationalPrice price0 = new MockInternationalPrice(new DefaultPrice(ZERO, Currency.USD));
+        MockInternationalPrice price5 = new MockInternationalPrice(new DefaultPrice(FIVE, Currency.USD));
+        MockInternationalPrice price10 = new MockInternationalPrice(new DefaultPrice(TEN, Currency.USD));
+        MockInternationalPrice price20 = new MockInternationalPrice(new DefaultPrice(TWENTY, Currency.USD));
+        
+        Plan basePlan = new MockPlan("base-plan");
+        PlanPhase basePlanTrial = new MockPlanPhase(null, price0, BillingPeriod.NO_BILLING_PERIOD, PhaseType.TRIAL);
+        PlanPhase basePlanEvergreen = new MockPlanPhase(price10, null, BillingPeriod.MONTHLY, PhaseType.EVERGREEN);
+
+        Plan addOnPlan = new MockPlan("add-on-plan");
+        PlanPhase addOnPlanPhaseDiscount = new MockPlanPhase(price5, null, BillingPeriod.MONTHLY, PhaseType.DISCOUNT);
+        PlanPhase addOnPlanPhaseEvergreen = new MockPlanPhase(price10, null, BillingPeriod.MONTHLY, PhaseType.EVERGREEN);
+        
+        //
+        // Alright lets get down to it
+        //
+
+        //////////////////////////////////////////////////////////////////////////////////////////
+        // create a base plan on April 25th with a phase change and generate associated invoice
+        //////////////////////////////////////////////////////////////////////////////////////////
+        UUID accountId = UUID.randomUUID();
+        Subscription baseSubscription = createZombieSubscription();
+        
+        // creation 
+        events.add(createBillingEvent(baseSubscription.getId(), april25, basePlan, basePlanTrial, 25));
+        // phase change from trial
+        events.add(createBillingEvent(baseSubscription.getId(), may25, basePlan, basePlanEvergreen, 25));
+        
+        // generate invoice
+        Invoice invoice1 = generator.generateInvoice(accountId, events, null, april25, Currency.USD);
+        assertNotNull(invoice1);
+        assertEquals(invoice1.getNumberOfItems(), 1);
+        assertEquals(invoice1.getTotalAmount().compareTo(ZERO), 0);
+
+        List<Invoice> invoices = new ArrayList<Invoice>();
+        invoices.add(invoice1);
+        
+        //////////////////////////////////////////////////////////////////////////////////////////
+        // create add-on on April 28th with a phase change and generate associated invoice
+        //////////////////////////////////////////////////////////////////////////////////////////
+        DateTime april28 = new DateTime(2012, 4, 28, 0, 0, 0, 0);
+        Subscription addOnSubscription1 = createZombieSubscription();
+
+        // creation
+        events.add(createBillingEvent(addOnSubscription1.getId(), april28, addOnPlan, addOnPlanPhaseDiscount, 25));
+        //phase change
+        events.add(createBillingEvent(addOnSubscription1.getId(), may28, addOnPlan, addOnPlanPhaseEvergreen, 25));
+
+        Invoice invoice2 = generator.generateInvoice(accountId, events, invoices, april28, Currency.USD);
+        invoices.add(invoice2);
+        assertNotNull(invoice2);
+        assertEquals(invoice2.getNumberOfItems(), 1);
+        assertEquals(invoice2.getTotalAmount().compareTo(FIVE.multiply(new BigDecimal("0.9")).setScale(NUMBER_OF_DECIMALS, ROUNDING_METHOD)), 0);
+
+
+        // generate invoice for BCD on May 25th
+        // Should have 3 items:
+        //  base plan 5-25  thru 6-25
+        //  add-on up to phase change 5-25 thru 5-28
+        //  add-on post phase change 5-28 thru 6-25
+        // but the last one of these is missing
+        
+        Invoice invoice3 = generator.generateInvoice(accountId, events, invoices, may25, Currency.USD);
+        assertNotNull(invoice3);
+        
+        // try generating an invoice on June 2nd (I don't think there should be anything here)
+
+        Invoice invoice4 = generator.generateInvoice(accountId, events, invoices, june2, Currency.USD);
+        checkForOverlaps(new Subscription[]{addOnSubscription1,baseSubscription}, new Invoice[]{invoice1, invoice2, invoice3, invoice4});
+        
+        assertNull(invoice4); //Not completely sure about this but I don't think there should be anything gerenated here.
+       
+    }
+    
+    
+    // For a given subscription there should be no overlapping periods in the recurring items
+    private void checkForOverlaps(Subscription[] subscriptions, Invoice[] invoices) {
+       for(Subscription s : subscriptions){
+           // collect all the items
+           List<InvoiceItem> items = new ArrayList<InvoiceItem>();
+           for(Invoice i : invoices) {
+               for(InvoiceItem ii : i.getInvoiceItems()) {
+                   if(ii.getSubscriptionId().equals(s.getId())) {
+                       items.add(ii);
+                   }
+               }
+           }
+           
+           //compare every item with every other item
+           for(InvoiceItem ii : items) {
+              for(InvoiceItem jj : items) {
+                  if(ii != jj) { //do't compare with self
+                      checkIntersection(ii,jj);
+                  }
+              }
+           }
+       }
+        
+    }
+
+    private void checkIntersection(InvoiceItem ii, InvoiceItem jj) {
+        DateTime iiStart = ii.getStartDate();
+        DateTime iiEnd = ii.getEndDate();
+        DateTime jjStart = ii.getStartDate();
+        DateTime jjEnd = ii.getEndDate();
+       
+        if ( (!iiStart.isAfter(jjStart) && iiEnd.isAfter(jjStart) )|| 
+             (iiStart.isBefore(jjEnd) && !iiEnd.isBefore(jjEnd))     ||
+             (!jjStart.isAfter(iiStart) && jjEnd.isAfter(iiStart)) || 
+             (jjStart.isBefore(iiEnd) && !jjEnd.isBefore(iiEnd))  ) {
+            Assert.fail(String.format("Two invocie items for the same subscription have overlapping dates [%s,%s] [%s,%s]", iiStart, iiEnd, jjStart,jjEnd));
+        }
+        
     }
 
     @Test(enabled = false)

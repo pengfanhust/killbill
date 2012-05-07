@@ -33,8 +33,12 @@
         <level value="info"/>
     </logger>
 
+    <logger name="com.ning.billing.junction.plumbing.billing">
+        <level value="debug"/>
+    </logger>
+
     <root>
-        <priority value="info"/>
+        <priority value="debug"/>
         <appender-ref ref="stdout"/>
     </root>
 </log4j:configuration>

@@ -348,5 +348,17 @@ public class DefaultSubscriptionEvent implements SubscriptionEvent {
             return false;
         return true;
     }
+
+    @Override
+    public String toString() {
+        return "DefaultSubscriptionEvent [totalOrdering=" + totalOrdering + ", subscriptionId=" + subscriptionId
+                + ", bundleId=" + bundleId + ", eventId=" + eventId + ", requestedTransitionTime="
+                + requestedTransitionTime + ", effectiveTransitionTime=" + effectiveTransitionTime + ", previousState="
+                + previousState + ", previousPriceList=" + previousPriceList + ", previousPlan=" + previousPlan
+                + ", previousPhase=" + previousPhase + ", nextState=" + nextState + ", nextPriceList=" + nextPriceList
+                + ", nextPlan=" + nextPlan + ", nextPhase=" + nextPhase + ", remainingEventsForUserOperation="
+                + remainingEventsForUserOperation + ", userToken=" + userToken + ", transitionType=" + transitionType
+                + ", startDate=" + startDate + "]";
+    }
     
 }

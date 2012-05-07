@@ -32,6 +32,10 @@
     <logger name="com.ning.billing.util.notificationq">
         <level value="info"/>
     </logger>
+    
+   <logger name="com.ning.billing.junction.plumbing.billing">
+        <level value="debug"/>
+    </logger>
 
     <root>
         <priority value="info"/>

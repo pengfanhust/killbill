@@ -144,6 +144,53 @@ public class TestIntegration extends TestIntegrationBase {
         assertTrue(busHandler.isCompleted(DELAY));
     }
    
+    
+    @Test(groups = "slow", enabled = true)
+    public void testRepairChangeBPWithAddonIncludedSimplified() throws Exception {
+        
+        DateTime initialDate = new DateTime(2012, 4, 25, 0, 3, 42, 0);
+        clock.setDeltaFromReality(initialDate.getMillis() - clock.getUTCNow().getMillis());
+        
+        Account account = accountUserApi.createAccount(getAccountData(25), null, null, context);
+        assertNotNull(account);
+
+        SubscriptionBundle bundle = entitlementUserApi.createBundleForAccount(account.getId(), "whatever", context);
+
+        String productName = "Shotgun";
+        BillingPeriod term = BillingPeriod.MONTHLY;
+        String planSetName = PriceListSet.DEFAULT_PRICELIST_NAME;
+
+        busHandler.pushExpectedEvent(NextEvent.CREATE);
+        busHandler.pushExpectedEvent(NextEvent.INVOICE);
+        SubscriptionData baseSubscription = subscriptionDataFromSubscription(entitlementUserApi.createSubscription(bundle.getId(),
+                new PlanPhaseSpecifier(productName, ProductCategory.BASE, term, planSetName, null), null, context));
+        assertNotNull(baseSubscription);
+        assertTrue(busHandler.isCompleted(DELAY));
+   
+        // MOVE CLOCK A LITTLE BIT-- STILL IN TRIAL
+        Interval it = new Interval(clock.getUTCNow(), clock.getUTCNow().plusDays(3));
+        clock.addDeltaFromReality(it.toDurationMillis());
+
+        busHandler.pushExpectedEvent(NextEvent.CREATE);
+        busHandler.pushExpectedEvent(NextEvent.INVOICE);
+        busHandler.pushExpectedEvent(NextEvent.PAYMENT);
+        SubscriptionData aoSubscription = subscriptionDataFromSubscription(entitlementUserApi.createSubscription(bundle.getId(),
+                new PlanPhaseSpecifier("Telescopic-Scope", ProductCategory.ADD_ON, BillingPeriod.MONTHLY, PriceListSet.DEFAULT_PRICELIST_NAME, null), null, context));
+        assertTrue(busHandler.isCompleted(DELAY));
+        
+      
+
+        // MOVE CLOCK A LITTLE BIT MORE -- EITHER STAY IN TRIAL OR GET OUT   
+        int duration = 35;
+        it = new Interval(clock.getUTCNow(), clock.getUTCNow().plusDays(duration));
+        busHandler.pushExpectedEvent(NextEvent.PHASE);
+        busHandler.pushExpectedEvent(NextEvent.PHASE);
+        busHandler.pushExpectedEvent(NextEvent.INVOICE);
+        busHandler.pushExpectedEvent(NextEvent.PAYMENT);
+        clock.addDeltaFromReality(it.toDurationMillis());
+        assertTrue(busHandler.isCompleted(DELAY));
+    }
+   
     @Test(groups = {"slow"})
     public void testRepairForInvoicing() throws AccountApiException, EntitlementUserApiException {
         log.info("Starting testRepairForInvoicing");

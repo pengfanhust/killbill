@@ -16,6 +16,7 @@
 
 package com.ning.billing.junction.plumbing.billing;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -76,7 +77,8 @@ public class DefaultBillingApi implements BillingApi {
 
         List<SubscriptionBundle> bundles = entitlementUserApi.getBundlesForAccount(accountId);
         SortedSet<BillingEvent> result = new TreeSet<BillingEvent>();
-
+        
+        log.debug("********* Subscription Transition Events");
         try {
             Account account = accountApi.getAccountById(accountId);
             for (final SubscriptionBundle bundle: bundles) {
@@ -84,6 +86,7 @@ public class DefaultBillingApi implements BillingApi {
 
                 for (final Subscription subscription: subscriptions) {
                     for (final SubscriptionEvent transition : subscription.getBillingTransitions()) {
+                        log.debug(transition.toString());
                         try {
                             int bcd = bcdCalculator.calculateBcd(bundle, subscription, transition, account);
 
@@ -108,12 +111,23 @@ public class DefaultBillingApi implements BillingApi {
         } catch (AccountApiException e) {
             log.warn("Failed while getting BillingEvent", e);
         }
-
+        
+        debugLog(result, "********* Billing Events Raw");
         blockCalculator.insertBlockingEvents(result);
+        debugLog(result,"*********  Billing Events After Blocking");
 
         return result;
     }
 
+
+    private void debugLog(SortedSet<BillingEvent> result, String title) {
+        log.debug(title);
+        Iterator<BillingEvent> i = result.iterator();
+        while(i.hasNext()) {
+            log.debug(i.next().toString());
+        }
+        
+    }
 
     @Override
     public UUID getAccountIdFromSubscriptionId(UUID subscriptionId) {
