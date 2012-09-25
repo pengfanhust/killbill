@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2011 Ning, Inc.
+ * Copyright 2010-2012 Ning, Inc.
  *
  * Ning licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -18,26 +18,10 @@ package com.ning.billing.util.callcontext;
 
 import java.util.UUID;
 
-import org.joda.time.DateTime;
-
 /**
  * External use
  */
-public interface CallContext extends TenantContext {
+public interface TenantContext {
 
-    public UUID getUserToken();
-
-    public String getUserName();
-
-    public CallOrigin getCallOrigin();
-
-    public UserType getUserType();
-
-    public String getReasonCode();
-
-    public String getComment();
-
-    public DateTime getCreatedDate();
-
-    public DateTime getUpdatedDate();
+    public UUID getTenantId();
 }
