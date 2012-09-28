@@ -58,8 +58,16 @@ public @interface InternalTenantContextBinder {
                     if (context instanceof InternalCallContext) {
                         final InternalCallContext callContext = (InternalCallContext) context;
                         q.bind("userName", callContext.getUserName());
-                        q.bind("createdDate", callContext.getCreatedDate().toDate());
-                        q.bind("updatedDate", callContext.getUpdatedDate().toDate());
+                        if (callContext.getCreatedDate() == null) {
+                            q.bindNull("createdDate", Types.DATE);
+                        } else {
+                            q.bind("createdDate", callContext.getCreatedDate().toDate());
+                        }
+                        if (callContext.getUpdatedDate() == null) {
+                            q.bindNull("updatedDate", Types.DATE);
+                        } else {
+                            q.bind("updatedDate", callContext.getUpdatedDate().toDate());
+                        }
                         q.bind("reasonCode", callContext.getReasonCode());
                         q.bind("comment", callContext.getComment());
                         q.bind("userToken", (callContext.getUserToken() != null) ? callContext.getUserToken().toString() : null);

@@ -98,7 +98,8 @@ public class BillCycleDayCalculator {
                 }
                 break;
             case BUNDLE:
-                final Subscription baseSub = entitlementApi.getBaseSubscription(bundle.getId());
+                // TODO
+                final Subscription baseSub = entitlementApi.getBaseSubscription(bundle.getId(), null);
                 Plan basePlan = baseSub.getCurrentPlan();
                 if (basePlan == null) {
                     // The BP has been cancelled
