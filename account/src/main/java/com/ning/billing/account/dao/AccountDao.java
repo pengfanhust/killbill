@@ -30,8 +30,6 @@ public interface AccountDao extends UpdatableEntityDao<Account> {
     public Account getAccountByKey(String key, InternalTenantContext context);
 
     /**
-     * @param externalKey
-     * @return
      * @throws AccountApiException when externalKey is null
      */
     public UUID getIdFromKey(String externalKey, InternalTenantContext context) throws AccountApiException;
@@ -40,5 +38,5 @@ public interface AccountDao extends UpdatableEntityDao<Account> {
      * @param accountId       the id of the account
      * @param paymentMethodId the is of the current default paymentMethod
      */
-    public void updatePaymentMethod(UUID accountId, UUID paymentMethodId, final InternalCallContext context) throws EntityPersistenceException;
+    public void updatePaymentMethod(UUID accountId, UUID paymentMethodId, InternalCallContext context) throws EntityPersistenceException;
 }

@@ -40,6 +40,4 @@ public interface AccountEmailDao extends EntityDao<AccountEmail> {
     public void addEmail(UUID accountId, AccountEmail email, InternalCallContext context);
 
     public void removeEmail(UUID accountId, AccountEmail email, InternalCallContext context);
-
-    public void test(InternalCallContext context);
 }

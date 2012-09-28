@@ -37,6 +37,7 @@ import com.ning.billing.account.dao.AccountEmailDao;
 import com.ning.billing.util.callcontext.CallContext;
 import com.ning.billing.util.callcontext.CallContextFactory;
 import com.ning.billing.util.callcontext.InternalCallContextFactory;
+import com.ning.billing.util.callcontext.TenantContext;
 import com.ning.billing.util.entity.EntityPersistenceException;
 
 import com.google.inject.Inject;
@@ -71,8 +72,8 @@ public class DefaultAccountUserApi implements AccountUserApi {
     }
 
     @Override
-    public Account getAccountByKey(final String key) throws AccountApiException {
-        final Account account = accountDao.getAccountByKey(key, internalCallContextFactory.createInternalTenantContext());
+    public Account getAccountByKey(final String key, final TenantContext context) throws AccountApiException {
+        final Account account = accountDao.getAccountByKey(key, internalCallContextFactory.createInternalTenantContext(context));
         if (account == null) {
             throw new AccountApiException(ErrorCode.ACCOUNT_DOES_NOT_EXIST_FOR_KEY, key);
         }
@@ -80,8 +81,8 @@ public class DefaultAccountUserApi implements AccountUserApi {
     }
 
     @Override
-    public Account getAccountById(final UUID id) throws AccountApiException {
-        final Account account = accountDao.getById(id, internalCallContextFactory.createInternalTenantContext(id));
+    public Account getAccountById(final UUID id, final TenantContext context) throws AccountApiException {
+        final Account account = accountDao.getById(id, internalCallContextFactory.createInternalTenantContext(id, context));
         if (account == null) {
             throw new AccountApiException(ErrorCode.ACCOUNT_DOES_NOT_EXIST_FOR_ID, id);
         }
@@ -89,13 +90,13 @@ public class DefaultAccountUserApi implements AccountUserApi {
     }
 
     @Override
-    public List<Account> getAccounts() {
-        return accountDao.get(internalCallContextFactory.createInternalTenantContext());
+    public List<Account> getAccounts(final TenantContext context) {
+        return accountDao.get(internalCallContextFactory.createInternalTenantContext(context));
     }
 
     @Override
-    public UUID getIdFromKey(final String externalKey) throws AccountApiException {
-        return accountDao.getIdFromKey(externalKey, internalCallContextFactory.createInternalTenantContext());
+    public UUID getIdFromKey(final String externalKey, final TenantContext context) throws AccountApiException {
+        return accountDao.getIdFromKey(externalKey, internalCallContextFactory.createInternalTenantContext(context));
     }
 
     @Override
@@ -121,7 +122,7 @@ public class DefaultAccountUserApi implements AccountUserApi {
 
     @Override
     public void updateAccount(final String externalKey, final AccountData accountData, final CallContext context) throws AccountApiException {
-        final UUID accountId = getIdFromKey(externalKey);
+        final UUID accountId = getIdFromKey(externalKey, context);
         if (accountId == null) {
             throw new AccountApiException(ErrorCode.ACCOUNT_DOES_NOT_EXIST_FOR_KEY, externalKey);
         }
@@ -149,8 +150,8 @@ public class DefaultAccountUserApi implements AccountUserApi {
     }
 
     @Override
-    public List<AccountEmail> getEmails(final UUID accountId) {
-        return accountEmailDao.getEmails(accountId, internalCallContextFactory.createInternalTenantContext(accountId));
+    public List<AccountEmail> getEmails(final UUID accountId, final TenantContext context) {
+        return accountEmailDao.getEmails(accountId, internalCallContextFactory.createInternalTenantContext(accountId, context));
     }
 
     @Override
