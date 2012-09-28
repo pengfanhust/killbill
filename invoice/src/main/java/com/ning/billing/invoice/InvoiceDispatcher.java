@@ -56,6 +56,8 @@ import com.ning.billing.util.bus.Bus;
 import com.ning.billing.util.bus.Bus.EventBusException;
 import com.ning.billing.util.bus.BusEvent;
 import com.ning.billing.util.callcontext.CallContext;
+import com.ning.billing.util.callcontext.InternalCallContext;
+import com.ning.billing.util.callcontext.InternalCallContextFactory;
 import com.ning.billing.util.clock.Clock;
 import com.ning.billing.util.globallocker.GlobalLock;
 import com.ning.billing.util.globallocker.GlobalLocker;
@@ -79,15 +81,17 @@ public class InvoiceDispatcher {
     private final GlobalLocker locker;
     private final Bus eventBus;
     private final Clock clock;
+    private final InternalCallContextFactory internalCallContextFactory;
 
     @Inject
     public InvoiceDispatcher(final InvoiceGenerator generator, final AccountUserApi accountUserApi,
-            final BillingApi billingApi,
-            final InvoiceDao invoiceDao,
-            final InvoiceNotifier invoiceNotifier,
-            final GlobalLocker locker,
-            final Bus eventBus,
-            final Clock clock) {
+                             final BillingApi billingApi,
+                             final InvoiceDao invoiceDao,
+                             final InvoiceNotifier invoiceNotifier,
+                             final GlobalLocker locker,
+                             final Bus eventBus,
+                             final Clock clock,
+                             final InternalCallContextFactory internalCallContextFactory) {
         this.generator = generator;
         this.billingApi = billingApi;
         this.accountUserApi = accountUserApi;
@@ -96,6 +100,7 @@ public class InvoiceDispatcher {
         this.locker = locker;
         this.eventBus = eventBus;
         this.clock = clock;
+        this.internalCallContextFactory = internalCallContextFactory;
     }
 
     public void processSubscription(final EffectiveSubscriptionEvent transition,
@@ -106,18 +111,17 @@ public class InvoiceDispatcher {
         processSubscription(subscriptionId, targetDate, context);
     }
 
-    public void processSubscription(final UUID subscriptionId, final DateTime targetDate,
-            final CallContext context) throws InvoiceApiException {
+    public void processSubscription(final UUID subscriptionId, final DateTime targetDate, final CallContext context) throws InvoiceApiException {
         try {
             if (subscriptionId == null) {
                 log.error("Failed handling entitlement change.", new InvoiceApiException(ErrorCode.INVOICE_INVALID_TRANSITION));
                 return;
             }
-            final UUID accountId = billingApi.getAccountIdFromSubscriptionId(subscriptionId);
+            final UUID accountId = billingApi.getAccountIdFromSubscriptionId(subscriptionId, context);
             processAccount(accountId, targetDate, false, context);
         } catch (EntitlementBillingApiException e) {
             log.error("Failed handling entitlement change.",
-                    new InvoiceApiException(ErrorCode.INVOICE_NO_ACCOUNT_ID_FOR_SUBSCRIPTION_ID, subscriptionId.toString()));
+                      new InvoiceApiException(ErrorCode.INVOICE_NO_ACCOUNT_ID_FOR_SUBSCRIPTION_ID, subscriptionId.toString()));
         }
     }
 
@@ -144,12 +148,12 @@ public class InvoiceDispatcher {
             final boolean dryRun, final CallContext context) throws InvoiceApiException {
         try {
             // Make sure to first set the BCD if needed then get the account object (to have the BCD set)
-            final BillingEventSet billingEvents = billingApi.getBillingEventsForAccountAndUpdateAccountBCD(accountId);
-            final Account account = accountUserApi.getAccountById(accountId);
+            final BillingEventSet billingEvents = billingApi.getBillingEventsForAccountAndUpdateAccountBCD(accountId, context);
+            final Account account = accountUserApi.getAccountById(accountId, context);
 
             List<Invoice> invoices = new ArrayList<Invoice>();
             if (!billingEvents.isAccountAutoInvoiceOff()) {
-                invoices = invoiceDao.getInvoicesByAccount(accountId); //no need to fetch, invoicing is off on this account
+                invoices = invoiceDao.getInvoicesByAccount(accountId, internalCallContextFactory.createInternalTenantContext(account.getId())); //no need to fetch, invoicing is off on this account
             }
 
             final Currency targetCurrency = account.getCurrency();
@@ -158,6 +162,7 @@ public class InvoiceDispatcher {
             final LocalDate targetDate = new LocalDate(targetDateTime, account.getTimeZone());
 
             final Invoice invoice = generator.generateInvoice(accountId, billingEvents, invoices, targetDate, account.getTimeZone(), targetCurrency);
+            final InternalCallContext internalCallContext = internalCallContextFactory.createInternalCallContext(account.getId(), context);
 
             if (invoice == null) {
                 log.info("Generated null invoice.");
@@ -176,7 +181,7 @@ public class InvoiceDispatcher {
                         }
                     }).size() > 0;
 
-                    invoiceDao.create(invoice, account.getBillCycleDay().getDayOfMonthUTC(), isRealInvoiceWithItems, context);
+                    invoiceDao.create(invoice, account.getBillCycleDay().getDayOfMonthUTC(), isRealInvoiceWithItems, internalCallContext);
 
                     final List<InvoiceItem> fixedPriceInvoiceItems = invoice.getInvoiceItems(FixedPriceInvoiceItem.class);
                     final List<InvoiceItem> recurringInvoiceItems = invoice.getInvoiceItems(RecurringInvoiceItem.class);
@@ -193,7 +198,7 @@ public class InvoiceDispatcher {
             }
 
             if (account.isNotifiedForInvoices()) {
-                invoiceNotifier.notify(account, invoice);
+                invoiceNotifier.notify(account, invoice, context);
             }
 
             return invoice;

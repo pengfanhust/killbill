@@ -47,6 +47,7 @@ import com.ning.billing.invoice.notification.NextBillingDatePoster;
 import com.ning.billing.util.api.TagUserApi;
 import com.ning.billing.util.bus.Bus;
 import com.ning.billing.util.callcontext.CallContext;
+import com.ning.billing.util.callcontext.InternalCallContextFactory;
 import com.ning.billing.util.callcontext.TestCallContext;
 import com.ning.billing.util.clock.Clock;
 import com.ning.billing.util.clock.ClockMock;
@@ -80,17 +81,18 @@ public class TestDefaultInvoicePaymentApi extends InvoiceTestSuiteWithEmbeddedDB
         final IDBI dbi = helper.getDBI();
 
         invoiceSqlDao = dbi.onDemand(InvoiceSqlDao.class);
-        invoiceSqlDao.test();
+        invoiceSqlDao.test(internalCallContext);
 
         invoiceItemSqlDao = dbi.onDemand(InvoiceItemSqlDao.class);
-        invoiceItemSqlDao.test();
+        invoiceItemSqlDao.test(internalCallContext);
 
         final NextBillingDatePoster nextBillingDatePoster = new MockNextBillingDatePoster();
         final TagDefinitionDao tagDefinitionDao = new MockTagDefinitionDao();
         final TagDao tagDao = new MockTagDao();
-        final TagUserApi tagUserApi = new DefaultTagUserApi(tagDefinitionDao, tagDao);
+        final InternalCallContextFactory internalCallContextFactory = new InternalCallContextFactory(clock);
+        final TagUserApi tagUserApi = new DefaultTagUserApi(internalCallContextFactory, tagDefinitionDao, tagDao);
         final InvoiceDao invoiceDao = new AuditedInvoiceDao(dbi, nextBillingDatePoster, tagUserApi, clock, Mockito.mock(Bus.class));
-        invoicePaymentApi = new DefaultInvoicePaymentApi(invoiceDao);
+        invoicePaymentApi = new DefaultInvoicePaymentApi(invoiceDao, internalCallContextFactory);
 
         context = new TestCallContext("Invoice payment tests");
     }
@@ -164,7 +166,7 @@ public class TestDefaultInvoicePaymentApi extends InvoiceTestSuiteWithEmbeddedDB
         final InvoicePayment payment = createAndPersistPayment(invoicePaymentApi, clock, invoice.getId(), invoiceAmount, CURRENCY, context);
 
         // Verify the initial invoice balance
-        final BigDecimal initialInvoiceBalance = invoicePaymentApi.getInvoice(invoice.getId()).getBalance();
+        final BigDecimal initialInvoiceBalance = invoicePaymentApi.getInvoice(invoice.getId(), callContext).getBalance();
         Assert.assertEquals(initialInvoiceBalance.compareTo(BigDecimal.ZERO), 0);
 
         // Create a full refund with no adjustment
@@ -177,7 +179,7 @@ public class TestDefaultInvoicePaymentApi extends InvoiceTestSuiteWithEmbeddedDB
         Assert.assertEquals(refund.getType(), InvoicePaymentType.REFUND);
 
         // Verify the current invoice balance
-        final BigDecimal newInvoiceBalance = invoicePaymentApi.getInvoice(invoice.getId()).getBalance().setScale(2, RoundingMode.HALF_UP);
+        final BigDecimal newInvoiceBalance = invoicePaymentApi.getInvoice(invoice.getId(), callContext).getBalance().setScale(2, RoundingMode.HALF_UP);
         Assert.assertEquals(newInvoiceBalance.compareTo(finalInvoiceAmount.setScale(2, RoundingMode.HALF_UP)), 0);
     }
 }

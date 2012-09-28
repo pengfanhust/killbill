@@ -33,11 +33,15 @@ import com.ning.billing.invoice.dao.InvoiceItemSqlDao;
 import com.ning.billing.invoice.dao.InvoiceSqlDao;
 import com.ning.billing.invoice.model.FixedPriceInvoiceItem;
 import com.ning.billing.util.callcontext.CallContext;
+import com.ning.billing.util.callcontext.InternalCallContextFactory;
 import com.ning.billing.util.clock.Clock;
+import com.ning.billing.util.clock.ClockMock;
 
 import com.google.common.collect.ImmutableList;
 
 public class InvoiceTestUtils {
+
+    private static final InternalCallContextFactory internalCallContextFactory = new InternalCallContextFactory(new ClockMock());
 
     private InvoiceTestUtils() {}
 
@@ -71,12 +75,12 @@ public class InvoiceTestUtils {
         final List<InvoiceItem> invoiceItems = new ArrayList<InvoiceItem>();
         for (final BigDecimal amount : amounts) {
             final InvoiceItem invoiceItem = createInvoiceItem(clock, invoiceId, accountId, amount, currency);
-            invoiceItemSqlDao.create(invoiceItem, callContext);
+            invoiceItemSqlDao.create(invoiceItem, internalCallContextFactory.createInternalCallContext(callContext));
             invoiceItems.add(invoiceItem);
         }
         Mockito.when(invoice.getInvoiceItems()).thenReturn(invoiceItems);
 
-        invoiceSqlDao.create(invoice, callContext);
+        invoiceSqlDao.create(invoice, internalCallContextFactory.createInternalCallContext(callContext));
 
         return invoice;
     }

@@ -35,6 +35,8 @@ import com.ning.billing.invoice.model.MigrationInvoiceItem;
 import com.ning.billing.util.callcontext.CallContext;
 import com.ning.billing.util.callcontext.CallOrigin;
 import com.ning.billing.util.callcontext.DefaultCallContextFactory;
+import com.ning.billing.util.callcontext.InternalCallContextFactory;
+import com.ning.billing.util.callcontext.TenantContext;
 import com.ning.billing.util.callcontext.UserType;
 import com.ning.billing.util.clock.Clock;
 
@@ -46,30 +48,34 @@ public class DefaultInvoiceMigrationApi implements InvoiceMigrationApi {
     private final AccountUserApi accountUserApi;
     private final AuditedInvoiceDao dao;
     private final Clock clock;
+    private final InternalCallContextFactory internalCallContextFactory;
 
     @Inject
-    public DefaultInvoiceMigrationApi(final AccountUserApi accountUserApi, final AuditedInvoiceDao dao, final Clock clock) {
+    public DefaultInvoiceMigrationApi(final AccountUserApi accountUserApi,
+                                      final AuditedInvoiceDao dao,
+                                      final Clock clock,
+                                      final InternalCallContextFactory internalCallContextFactory) {
         this.accountUserApi = accountUserApi;
         this.dao = dao;
         this.clock = clock;
+        this.internalCallContextFactory = internalCallContextFactory;
     }
 
     @Override
-    public UUID createMigrationInvoice(final UUID accountId, final LocalDate targetDate, final BigDecimal balance, final Currency currency) {
+    public UUID createMigrationInvoice(final UUID accountId, final LocalDate targetDate, final BigDecimal balance, final Currency currency, final CallContext context) {
         final Account account;
         try {
-            account = accountUserApi.getAccountById(accountId);
+            account = accountUserApi.getAccountById(accountId, context);
         } catch (AccountApiException e) {
             log.warn("Unable to find account for id {}", accountId);
             return null;
         }
 
-        final CallContext context = new DefaultCallContextFactory(clock).createMigrationCallContext("Migration", CallOrigin.INTERNAL, UserType.MIGRATION, clock.getUTCNow(), clock.getUTCNow());
         final Invoice migrationInvoice = new MigrationInvoice(accountId, clock.getUTCToday(), targetDate, currency);
         final InvoiceItem migrationInvoiceItem = new MigrationInvoiceItem(migrationInvoice.getId(), accountId, targetDate, balance, currency);
         migrationInvoice.addInvoiceItem(migrationInvoiceItem);
 
-        dao.create(migrationInvoice, account.getBillCycleDay().getDayOfMonthUTC(), true, context);
+        dao.create(migrationInvoice, account.getBillCycleDay().getDayOfMonthUTC(), true, internalCallContextFactory.createInternalCallContext(context));
         return migrationInvoice.getId();
     }
 }
