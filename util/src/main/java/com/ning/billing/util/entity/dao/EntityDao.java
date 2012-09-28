@@ -26,13 +26,13 @@ import com.ning.billing.util.entity.EntityPersistenceException;
 
 public interface EntityDao<T extends Entity> {
 
-    public void create(final T entity, final InternalCallContext context) throws EntityPersistenceException;
+    public void create(T entity, InternalCallContext context) throws EntityPersistenceException;
 
-    public Long getRecordId(final UUID id);
+    public Long getRecordId(UUID id, InternalTenantContext context);
 
-    public T getById(final UUID id, final InternalTenantContext context);
+    public T getById(UUID id, InternalTenantContext context);
 
-    public List<T> get(final InternalTenantContext context);
+    public List<T> get(InternalTenantContext context);
 
-    public void test(final InternalTenantContext context);
+    public void test(InternalTenantContext context);
 }

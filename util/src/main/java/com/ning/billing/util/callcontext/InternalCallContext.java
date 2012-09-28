@@ -18,6 +18,8 @@ package com.ning.billing.util.callcontext;
 
 import java.util.UUID;
 
+import javax.annotation.Nullable;
+
 import org.joda.time.DateTime;
 
 /**
@@ -34,7 +36,7 @@ public class InternalCallContext extends InternalTenantContext {
     private final DateTime createdDate;
     private final DateTime updatedDate;
 
-    public InternalCallContext(final Long tenantRecordId, final Long accountRecordId, final UUID userToken, final String userName,
+    public InternalCallContext(final Long tenantRecordId, @Nullable final Long accountRecordId, final UUID userToken, final String userName,
                                final CallOrigin callOrigin, final UserType userType, final String reasonCode, final String comment,
                                final DateTime createdDate, final DateTime updatedDate) {
         super(tenantRecordId, accountRecordId);
@@ -48,10 +50,14 @@ public class InternalCallContext extends InternalTenantContext {
         this.updatedDate = updatedDate;
     }
 
-    public InternalCallContext(final Long tenantRecordId, final Long accountRecordId, final CallContext callContext) {
+    public InternalCallContext(final Long tenantRecordId, @Nullable final Long accountRecordId, final CallContext callContext) {
         this(accountRecordId, tenantRecordId, callContext.getUserToken(), callContext.getUserName(), callContext.getCallOrigin(),
              callContext.getUserType(), callContext.getReasonCode(), callContext.getComment(), callContext.getCreatedDate(),
              callContext.getUpdatedDate());
+    }
+
+    public CallContext toCallContext() {
+        return new DefaultCallContext(userName, callOrigin, userType, reasonCode, comment, userToken, createdDate, updatedDate);
     }
 
     public UUID getUserToken() {

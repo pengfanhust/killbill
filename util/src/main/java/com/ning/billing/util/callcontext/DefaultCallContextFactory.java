@@ -16,13 +16,15 @@
 
 package com.ning.billing.util.callcontext;
 
-import javax.annotation.Nullable;
 import java.util.UUID;
+
+import javax.annotation.Nullable;
 
 import org.joda.time.DateTime;
 
-import com.google.inject.Inject;
 import com.ning.billing.util.clock.Clock;
+
+import com.google.inject.Inject;
 
 public class DefaultCallContextFactory implements CallContextFactory {
     private final Clock clock;

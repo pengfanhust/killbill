@@ -16,9 +16,12 @@
 
 package com.ning.billing.util.callcontext;
 
+import java.util.UUID;
+
 import org.joda.time.DateTime;
 
 public class MigrationCallContext extends CallContextBase {
+
     private final DateTime createdDate;
     private final DateTime updatedDate;
 
@@ -42,5 +45,11 @@ public class MigrationCallContext extends CallContextBase {
     @Override
     public DateTime getUpdatedDate() {
         return updatedDate;
+    }
+
+    @Override
+    public UUID getTenantId() {
+        // TODO
+        return null;
     }
 }

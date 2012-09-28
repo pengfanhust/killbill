@@ -25,10 +25,12 @@ import com.ning.billing.util.clock.Clock;
 public class DefaultCallContext extends CallContextBase {
 
     private final DateTime createdDate;
+    private final DateTime updateDate;
 
     public DefaultCallContext(final String userName, final CallOrigin callOrigin, final UserType userType, final UUID userToken, final Clock clock) {
         super(userName, callOrigin, userType, userToken);
         this.createdDate = clock.getUTCNow();
+        this.updateDate = createdDate;
     }
 
     public DefaultCallContext(final String userName, final CallOrigin callOrigin, final UserType userType,
@@ -36,6 +38,7 @@ public class DefaultCallContext extends CallContextBase {
                               final UUID userToken, final Clock clock) {
         super(userName, callOrigin, userType, reasonCode, comment, userToken);
         this.createdDate = clock.getUTCNow();
+        this.updateDate = createdDate;
     }
 
     public DefaultCallContext(final String userName, final CallOrigin callOrigin, final UserType userType, final Clock clock) {
@@ -46,6 +49,14 @@ public class DefaultCallContext extends CallContextBase {
                               final String comment, final UUID userToken) {
         super(userName, null, null, reasonCode, comment, userToken);
         this.createdDate = createdDate;
+        this.updateDate = createdDate;
+    }
+
+    public DefaultCallContext(final String userName, final CallOrigin callOrigin, final UserType userType, final String reasonCode,
+                              final String comment, final UUID userToken, final DateTime createdDate, final DateTime updatedDate) {
+        super(userName, callOrigin, userType, reasonCode, comment, userToken);
+        this.createdDate = createdDate;
+        this.updateDate = updatedDate;
     }
 
     @Override
@@ -56,6 +67,12 @@ public class DefaultCallContext extends CallContextBase {
     @Override
     public DateTime getUpdatedDate() {
         return createdDate;
+    }
+
+    @Override
+    public UUID getTenantId() {
+        // TODO
+        return null;
     }
 
     @Override

@@ -34,10 +34,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 
+import com.ning.billing.util.io.IOUtils;
+
 import com.google.common.io.Resources;
 import com.mysql.management.MysqldResource;
 import com.mysql.management.MysqldResourceI;
-import com.ning.billing.util.io.IOUtils;
 
 /**
  * Utility class to embed MySQL for testing purposes

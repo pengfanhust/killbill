@@ -35,6 +35,10 @@ public class InternalTenantContext {
         this(defaultTenantRecordId, null);
     }
 
+    public TenantContext toTenantContext() {
+        return new DefaultTenantContext();
+    }
+
     public Long getAccountRecordId() {
         return accountRecordId;
     }
