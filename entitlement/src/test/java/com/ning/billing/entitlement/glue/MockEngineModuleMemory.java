@@ -16,7 +16,6 @@
 
 package com.ning.billing.entitlement.glue;
 
-import com.google.inject.name.Names;
 import com.ning.billing.entitlement.api.timeline.RepairEntitlementLifecycleDao;
 import com.ning.billing.entitlement.engine.dao.EntitlementDao;
 import com.ning.billing.entitlement.engine.dao.MockEntitlementDaoMemory;
@@ -25,6 +24,8 @@ import com.ning.billing.util.glue.BusModule;
 import com.ning.billing.util.glue.BusModule.BusType;
 import com.ning.billing.util.notificationq.MockNotificationQueueService;
 import com.ning.billing.util.notificationq.NotificationQueueService;
+
+import com.google.inject.name.Names;
 
 public class MockEngineModuleMemory extends MockEngineModule {
     @Override

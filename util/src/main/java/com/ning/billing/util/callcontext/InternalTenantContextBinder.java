@@ -21,6 +21,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.sql.Types;
 
 import org.skife.jdbi.v2.SQLStatement;
 import org.skife.jdbi.v2.sqlobject.Binder;
@@ -41,8 +42,18 @@ public @interface InternalTenantContextBinder {
             return new Binder<InternalTenantContextBinder, InternalTenantContext>() {
                 @Override
                 public void bind(final SQLStatement q, final InternalTenantContextBinder bind, final InternalTenantContext context) {
-                    q.bind("tenantRecordId", context.getTenantRecordId());
-                    q.bind("accountRecordId", context.getAccountRecordId());
+                    if (context.getTenantRecordId() == null) {
+                        // TODO - shouldn't be null, but for now...
+                        q.bindNull("tenantRecordId", Types.INTEGER);
+                    } else {
+                        q.bind("tenantRecordId", context.getTenantRecordId());
+                    }
+
+                    if (context.getAccountRecordId() == null) {
+                        q.bindNull("accountRecordId", Types.INTEGER);
+                    } else {
+                        q.bind("accountRecordId", context.getAccountRecordId());
+                    }
 
                     if (context instanceof InternalCallContext) {
                         final InternalCallContext callContext = (InternalCallContext) context;

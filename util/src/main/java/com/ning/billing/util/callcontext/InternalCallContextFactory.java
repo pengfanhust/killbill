@@ -96,7 +96,7 @@ public class InternalCallContextFactory {
         todoAddAccountId();
 
         // TODO
-        return null;
+        return new InternalTenantContext(DEFAULT_TENANT_RECORD_ID);
     }
 
     private void todoAddAccountId() {
