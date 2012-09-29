@@ -92,6 +92,7 @@ import com.ning.billing.payment.provider.MockPaymentProviderPluginModule;
 import com.ning.billing.server.ServerTestSuiteWithEmbeddedDB;
 import com.ning.billing.server.listeners.KillbillGuiceListener;
 import com.ning.billing.server.modules.KillbillServerModule;
+import com.ning.billing.tenant.glue.TenantModule;
 import com.ning.billing.util.api.AuditLevel;
 import com.ning.billing.util.clock.Clock;
 import com.ning.billing.util.clock.ClockMock;
@@ -260,6 +261,7 @@ public class TestJaxrsBase extends ServerTestSuiteWithEmbeddedDB {
             install(new BeatrixModule());
             install(new DefaultJunctionModule());
             install(new DefaultOverdueModule());
+            install(new TenantModule());
             installClock();
         }
 

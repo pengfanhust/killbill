@@ -49,9 +49,9 @@ public class MysqlTestingHelper {
 
     private static final Logger log = LoggerFactory.getLogger(MysqlTestingHelper.class);
 
-    private static final String DB_NAME = "killbill";
-    private static final String USERNAME = "root";
-    private static final String PASSWORD = "root";
+    public static final String DB_NAME = "killbill";
+    public static final String USERNAME = "root";
+    public static final String PASSWORD = "root";
 
     // Discover dynamically list of all tables in that database;
     private List<String> allTables;
@@ -178,12 +178,16 @@ public class MysqlTestingHelper {
     }
 
     public IDBI getDBI() {
-        final String dbiString = "jdbc:mysql://localhost:" + port + "/" + DB_NAME + "?createDatabaseIfNotExist=true&allowMultiQueries=true";
+        final String dbiString = getJdbcConnectionString() + "?createDatabaseIfNotExist=true&allowMultiQueries=true";
         return new DBI(dbiString, USERNAME, PASSWORD);
     }
 
+    public String getJdbcConnectionString() {
+        return "jdbc:mysql://localhost:" + port + "/" + DB_NAME;
+    }
+
     public void initDb() throws IOException {
-        for (final String pack : new String[]{"account", "analytics", "entitlement", "util", "payment", "invoice", "junction"}) {
+        for (final String pack : new String[]{"account", "analytics", "entitlement", "util", "payment", "invoice", "junction", "tenant"}) {
             final String ddl;
             try {
                 ddl = IOUtils.toString(Resources.getResource("com/ning/billing/" + pack + "/ddl.sql").openStream());

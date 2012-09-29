@@ -52,6 +52,7 @@
         <module>util</module>
         <module>jaxrs</module>
         <module>server</module>
+        <module>tenant</module>
     </modules>
     <dependencyManagement>
         <dependencies>
@@ -97,6 +98,11 @@
             <dependency>
                 <groupId>com.ning.billing</groupId>
                 <artifactId>killbill-server</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.ning.billing</groupId>
+                <artifactId>killbill-tenant</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -280,6 +286,16 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-email</artifactId>
                 <version>1.2</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.shiro</groupId>
+                <artifactId>shiro-core</artifactId>
+                <version>1.2.1</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.shiro</groupId>
+                <artifactId>shiro-web</artifactId>
+                <version>1.2.1</version>
             </dependency>
             <dependency>
                 <groupId>joda-time</groupId>
