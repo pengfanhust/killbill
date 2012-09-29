@@ -22,6 +22,8 @@ import org.joda.time.DateTime;
 
 public interface CallContextFactory {
 
+    TenantContext createTenantContext(UUID tenantId);
+
     CallContext createCallContext(String userName, CallOrigin callOrigin, UserType userType, UUID userToken);
 
     CallContext createCallContext(String userName, CallOrigin callOrigin, UserType userType,

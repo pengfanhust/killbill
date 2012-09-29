@@ -13,17 +13,23 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+
 package com.ning.billing.jaxrs.util;
 
 import java.util.UUID;
 
-import com.google.common.base.Preconditions;
-import com.google.inject.Inject;
+import javax.servlet.ServletRequest;
+
 import com.ning.billing.jaxrs.resources.JaxrsResource;
+import com.ning.billing.tenant.api.Tenant;
 import com.ning.billing.util.callcontext.CallContext;
 import com.ning.billing.util.callcontext.CallContextFactory;
 import com.ning.billing.util.callcontext.CallOrigin;
+import com.ning.billing.util.callcontext.TenantContext;
 import com.ning.billing.util.callcontext.UserType;
+
+import com.google.common.base.Preconditions;
+import com.google.inject.Inject;
 
 public class Context {
 
@@ -33,13 +39,12 @@ public class Context {
 
     @Inject
     public Context(final CallContextFactory factory) {
-        super();
         this.origin = CallOrigin.EXTERNAL;
         this.userType = UserType.CUSTOMER;
         this.contextFactory = factory;
     }
 
-    public CallContext createContext(final String createdBy, final String reason, final String comment)
+    public CallContext createContext(final String createdBy, final String reason, final String comment, final ServletRequest request)
             throws IllegalArgumentException {
         try {
             Preconditions.checkNotNull(createdBy, String.format("Header %s needs to be set", JaxrsResource.HDR_CREATED_BY));
@@ -47,5 +52,9 @@ public class Context {
         } catch (NullPointerException e) {
             throw new IllegalArgumentException(e.getMessage());
         }
+    }
+
+    public TenantContext createContext(final ServletRequest request) {
+        return contextFactory.createTenantContext(((Tenant) request.getAttribute("killbill_tenant")).getId());
     }
 }

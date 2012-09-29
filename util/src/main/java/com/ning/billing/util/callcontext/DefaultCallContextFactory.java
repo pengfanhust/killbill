@@ -35,6 +35,11 @@ public class DefaultCallContextFactory implements CallContextFactory {
     }
 
     @Override
+    public TenantContext createTenantContext(final UUID tenantId) {
+        return new DefaultTenantContext(tenantId);
+    }
+
+    @Override
     public CallContext createCallContext(final String userName, final CallOrigin callOrigin, final UserType userType,
                                          @Nullable final UUID userToken) {
         return new DefaultCallContext(userName, callOrigin, userType, userToken, clock);

@@ -18,6 +18,7 @@ package com.ning.billing.jaxrs.resources;
 
 import java.util.UUID;
 
+import javax.servlet.ServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -51,18 +52,16 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 public class TenantResource extends JaxRsResourceBase {
 
     private final TenantUserApi tenantApi;
-    private final Context context;
 
     @Inject
-    public TenantResource(final JaxrsUriBuilder uriBuilder,
-                          final TenantUserApi tenantApi,
+    public TenantResource(final TenantUserApi tenantApi,
+                          final JaxrsUriBuilder uriBuilder,
                           final TagUserApi tagUserApi,
-                          final AuditUserApi auditUserApi,
                           final CustomFieldUserApi customFieldUserApi,
+                          final AuditUserApi auditUserApi,
                           final Context context) {
-        super(uriBuilder, tagUserApi, customFieldUserApi, auditUserApi);
+        super(uriBuilder, tagUserApi, customFieldUserApi, auditUserApi, context);
         this.tenantApi = tenantApi;
-        this.context = context;
     }
 
     @GET
@@ -86,9 +85,10 @@ public class TenantResource extends JaxRsResourceBase {
     public Response createTenant(final TenantJson json,
                                  @HeaderParam(HDR_CREATED_BY) final String createdBy,
                                  @HeaderParam(HDR_REASON) final String reason,
-                                 @HeaderParam(HDR_COMMENT) final String comment) throws TenantApiException {
+                                 @HeaderParam(HDR_COMMENT) final String comment,
+                                 @javax.ws.rs.core.Context final ServletRequest request) throws TenantApiException {
         final TenantData data = json.toTenantData();
-        final Tenant tenant = tenantApi.createTenant(data, context.createContext(createdBy, reason, comment));
+        final Tenant tenant = tenantApi.createTenant(data, context.createContext(createdBy, reason, comment, request));
         return uriBuilder.buildResponse(TenantResource.class, "getTenant", tenant.getId());
     }
 
