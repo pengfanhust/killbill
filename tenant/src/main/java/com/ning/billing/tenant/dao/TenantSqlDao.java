@@ -26,8 +26,8 @@ import org.skife.jdbi.v2.sqlobject.mixins.Transmogrifier;
 import org.skife.jdbi.v2.sqlobject.stringtemplate.ExternalizedSqlViaStringTemplate3;
 
 import com.ning.billing.tenant.api.Tenant;
-import com.ning.billing.util.callcontext.CallContext;
-import com.ning.billing.util.callcontext.CallContextBinder;
+import com.ning.billing.util.callcontext.InternalCallContext;
+import com.ning.billing.util.callcontext.InternalTenantContextBinder;
 import com.ning.billing.util.dao.UuidMapper;
 import com.ning.billing.util.entity.dao.EntitySqlDao;
 
@@ -39,8 +39,10 @@ public interface TenantSqlDao extends EntitySqlDao<Tenant>, Transactional<Tenant
     public Tenant getByApiKey(@Bind("apiKey") final String apiKey);
 
     @SqlUpdate
-    public void create(@TenantBinder final Tenant tenant, @Bind("apiSecret") final String apiSecret,
-                       @Bind("apiSalt") final String apiSalt, @CallContextBinder final CallContext context);
+    public void create(@TenantBinder final Tenant tenant,
+                       @Bind("apiSecret") final String apiSecret,
+                       @Bind("apiSalt") final String apiSalt,
+                       @InternalTenantContextBinder final InternalCallContext context);
 
     @SqlQuery
     @Mapper(TenantSecretsMapper.class)

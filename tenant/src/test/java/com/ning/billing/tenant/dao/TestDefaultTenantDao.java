@@ -29,7 +29,6 @@ import com.ning.billing.tenant.TenantTestSuiteWithEmbeddedDb;
 import com.ning.billing.tenant.api.DefaultTenant;
 import com.ning.billing.tenant.security.KillbillCredentialsMatcher;
 import com.ning.billing.util.bus.Bus;
-import com.ning.billing.util.callcontext.TestCallContext;
 
 public class TestDefaultTenantDao extends TenantTestSuiteWithEmbeddedDb {
 
@@ -39,7 +38,7 @@ public class TestDefaultTenantDao extends TenantTestSuiteWithEmbeddedDb {
 
         final DefaultTenant tenant = new DefaultTenant(UUID.randomUUID(), UUID.randomUUID().toString(),
                                                        UUID.randomUUID().toString(), UUID.randomUUID().toString());
-        tenantDao.create(tenant, new TestCallContext("tester"));
+        tenantDao.create(tenant, internalCallContext);
 
         // Verify we can retrieve it
         Assert.assertEquals(tenantDao.getTenantByApiKey(tenant.getApiKey()).getId(), tenant.getId());

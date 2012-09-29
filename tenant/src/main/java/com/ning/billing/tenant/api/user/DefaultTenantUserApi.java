@@ -26,6 +26,7 @@ import com.ning.billing.tenant.api.TenantData;
 import com.ning.billing.tenant.api.TenantUserApi;
 import com.ning.billing.tenant.dao.TenantDao;
 import com.ning.billing.util.callcontext.CallContext;
+import com.ning.billing.util.callcontext.InternalCallContextFactory;
 import com.ning.billing.util.entity.EntityPersistenceException;
 
 import com.google.inject.Inject;
@@ -33,10 +34,12 @@ import com.google.inject.Inject;
 public class DefaultTenantUserApi implements TenantUserApi {
 
     private final TenantDao tenantDao;
+    private final InternalCallContextFactory internalCallContextFactory;
 
     @Inject
-    public DefaultTenantUserApi(final TenantDao tenantDao) {
+    public DefaultTenantUserApi(final TenantDao tenantDao, final InternalCallContextFactory internalCallContextFactory) {
         this.tenantDao = tenantDao;
+        this.internalCallContextFactory = internalCallContextFactory;
     }
 
     @Override
@@ -44,7 +47,7 @@ public class DefaultTenantUserApi implements TenantUserApi {
         final Tenant tenant = new DefaultTenant(data);
 
         try {
-            tenantDao.create(tenant, context);
+            tenantDao.create(tenant, internalCallContextFactory.createInternalCallContext(context));
         } catch (EntityPersistenceException e) {
             throw new TenantApiException(e, ErrorCode.TENANT_CREATION_FAILED);
         }
@@ -63,7 +66,7 @@ public class DefaultTenantUserApi implements TenantUserApi {
 
     @Override
     public Tenant getTenantById(final UUID id) throws TenantApiException {
-        final Tenant tenant = tenantDao.getById(id);
+        final Tenant tenant = tenantDao.getById(id, internalCallContextFactory.createInternalTenantContext());
         if (tenant == null) {
             throw new TenantApiException(ErrorCode.TENANT_DOES_NOT_EXIST_FOR_ID, id);
         }

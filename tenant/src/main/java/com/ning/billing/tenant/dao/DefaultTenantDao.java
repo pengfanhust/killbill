@@ -30,7 +30,8 @@ import org.slf4j.LoggerFactory;
 
 import com.ning.billing.tenant.api.Tenant;
 import com.ning.billing.util.bus.Bus;
-import com.ning.billing.util.callcontext.CallContext;
+import com.ning.billing.util.callcontext.InternalCallContext;
+import com.ning.billing.util.callcontext.InternalTenantContext;
 import com.ning.billing.util.entity.EntityPersistenceException;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -57,7 +58,7 @@ public class DefaultTenantDao implements TenantDao {
     }
 
     @Override
-    public void create(final Tenant entity, final CallContext context) throws EntityPersistenceException {
+    public void create(final Tenant entity, final InternalCallContext context) throws EntityPersistenceException {
         // Create the salt and password
         final ByteSource salt = rng.nextBytes();
         // Hash the plain-text password with the random salt and multiple
@@ -68,18 +69,23 @@ public class DefaultTenantDao implements TenantDao {
     }
 
     @Override
-    public Tenant getById(final UUID id) {
-        return tenantSqlDao.getById(id.toString());
+    public Long getRecordId(final UUID id, final InternalTenantContext context) {
+        return tenantSqlDao.getRecordId(id.toString(), context);
     }
 
     @Override
-    public List<Tenant> get() {
-        return tenantSqlDao.get();
+    public Tenant getById(final UUID id, final InternalTenantContext context) {
+        return tenantSqlDao.getById(id.toString(), context);
     }
 
     @Override
-    public void test() {
-        tenantSqlDao.test();
+    public List<Tenant> get(final InternalTenantContext context) {
+        return tenantSqlDao.get(context);
+    }
+
+    @Override
+    public void test(final InternalTenantContext context) {
+        tenantSqlDao.test(context);
     }
 
     @VisibleForTesting
