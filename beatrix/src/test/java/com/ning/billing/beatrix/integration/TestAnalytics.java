@@ -459,8 +459,7 @@ public class TestAnalytics extends TestIntegrationBase {
         // No billing period for the trial item
         Assert.assertEquals(invoiceItem.getBillingPeriod(), subscription.getCurrentPhase().getBillingPeriod().toString());
         Assert.assertEquals(invoiceItem.getCurrency(), account.getCurrency());
-        // No end date for the trial item (fixed price of zero)
-        Assert.assertNull(invoiceItem.getEndDate());
+        Assert.assertEquals(invoiceItem.getEndDate(), invoiceItem.getStartDate().plusDays(30));
         Assert.assertEquals(invoiceItem.getExternalKey(), bundle.getKey());
         Assert.assertEquals(invoiceItem.getInvoiceId(), invoice.getInvoiceId());
         Assert.assertEquals(invoiceItem.getItemType(), "FIXED");
