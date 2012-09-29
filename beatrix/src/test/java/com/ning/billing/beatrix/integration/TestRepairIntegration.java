@@ -121,7 +121,7 @@ public class TestRepairIntegration extends TestIntegrationBase {
         }
         final boolean ifRepair = false;
         if (ifRepair) {
-            BundleTimeline bundleRepair = repairApi.getBundleTimeline(bundle.getId());
+            BundleTimeline bundleRepair = repairApi.getBundleTimeline(bundle.getId(), callContext);
             sortEventsOnBundle(bundleRepair);
 
             // Quick check
@@ -153,18 +153,18 @@ public class TestRepairIntegration extends TestIntegrationBase {
             repairApi.repairBundle(bundleRepair, false, context);
             assertTrue(busHandler.isCompleted(DELAY));
 
-            final SubscriptionData newAoSubscription = subscriptionDataFromSubscription(entitlementUserApi.getSubscriptionFromId(aoSubscription.getId()));
+            final SubscriptionData newAoSubscription = subscriptionDataFromSubscription(entitlementUserApi.getSubscriptionFromId(aoSubscription.getId(), callContext));
             assertEquals(newAoSubscription.getState(), SubscriptionState.CANCELLED);
             assertEquals(newAoSubscription.getAllTransitions().size(), 2);
             assertEquals(newAoSubscription.getActiveVersion(), SubscriptionEvents.INITIAL_VERSION + 1);
 
-            final SubscriptionData newAoSubscription2 = subscriptionDataFromSubscription(entitlementUserApi.getSubscriptionFromId(aoSubscription2.getId()));
+            final SubscriptionData newAoSubscription2 = subscriptionDataFromSubscription(entitlementUserApi.getSubscriptionFromId(aoSubscription2.getId(), callContext));
             assertEquals(newAoSubscription2.getState(), SubscriptionState.ACTIVE);
             assertEquals(newAoSubscription2.getAllTransitions().size(), 2);
             assertEquals(newAoSubscription2.getActiveVersion(), SubscriptionEvents.INITIAL_VERSION + 1);
 
 
-            final SubscriptionData newBaseSubscription = subscriptionDataFromSubscription(entitlementUserApi.getSubscriptionFromId(baseSubscription.getId()));
+            final SubscriptionData newBaseSubscription = subscriptionDataFromSubscription(entitlementUserApi.getSubscriptionFromId(baseSubscription.getId(), callContext));
             assertEquals(newBaseSubscription.getState(), SubscriptionState.ACTIVE);
             assertEquals(newBaseSubscription.getAllTransitions().size(), 3);
             assertEquals(newBaseSubscription.getActiveVersion(), SubscriptionEvents.INITIAL_VERSION + 1);

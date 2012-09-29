@@ -17,16 +17,13 @@
 package com.ning.billing.beatrix.integration;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 
 import javax.annotation.Nullable;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.joda.time.Interval;
 import org.joda.time.LocalDate;
 import org.skife.jdbi.v2.IDBI;
 import org.slf4j.Logger;
@@ -61,17 +58,14 @@ import com.ning.billing.entitlement.api.transfer.EntitlementTransferApi;
 import com.ning.billing.entitlement.api.user.EntitlementUserApi;
 import com.ning.billing.entitlement.api.user.EntitlementUserApiException;
 import com.ning.billing.entitlement.api.user.Subscription;
-import com.ning.billing.entitlement.api.user.SubscriptionBundle;
 import com.ning.billing.entitlement.api.user.SubscriptionData;
 import com.ning.billing.invoice.api.Invoice;
 import com.ning.billing.invoice.api.InvoiceApiException;
-import com.ning.billing.invoice.api.InvoiceItem;
 import com.ning.billing.invoice.api.InvoicePayment;
 import com.ning.billing.invoice.api.InvoicePaymentApi;
 import com.ning.billing.invoice.api.InvoiceService;
 import com.ning.billing.invoice.api.InvoiceUserApi;
 import com.ning.billing.invoice.model.InvoicingConfiguration;
-import com.ning.billing.junction.api.BlockingApi;
 import com.ning.billing.junction.plumbing.api.BlockingSubscription;
 import com.ning.billing.mock.MockAccountBuilder;
 import com.ning.billing.mock.api.MockBillCycleDay;
@@ -95,9 +89,6 @@ import com.google.common.base.Joiner;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-import static com.jayway.awaitility.Awaitility.await;
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
@@ -246,7 +237,7 @@ public class TestIntegrationBase extends BeatrixTestSuiteWithEmbeddedDB implemen
             final DateTime startDate, @Nullable final DateTime endDate,
             final BigDecimal amount, final DateTime chargeThroughDate,
             final int totalInvoiceItemCount) throws EntitlementUserApiException {
-        final SubscriptionData subscription = subscriptionDataFromSubscription(entitlementUserApi.getSubscriptionFromId(subscriptionId));
+        final SubscriptionData subscription = subscriptionDataFromSubscription(entitlementUserApi.getSubscriptionFromId(subscriptionId, callContext));
 
 
         /*
@@ -314,7 +305,7 @@ public class TestIntegrationBase extends BeatrixTestSuiteWithEmbeddedDB implemen
         };
 
         paymentApi.addPaymentMethod(BeatrixModule.PLUGIN_NAME, account, true, info, context);
-        return accountUserApi.getAccountById(account.getId());
+        return accountUserApi.getAccountById(account.getId(), callContext);
     }
 
     protected AccountData getAccountData(final int billingDay) {
@@ -457,7 +448,7 @@ public class TestIntegrationBase extends BeatrixTestSuiteWithEmbeddedDB implemen
             public Subscription apply(@Nullable final Void dontcare) {
                 try {
                     // Need to fetch again to get latest CTD updated from the system
-                    final Subscription refreshedSubscription = entitlementUserApi.getSubscriptionFromId(subscription.getId());
+                    final Subscription refreshedSubscription = entitlementUserApi.getSubscriptionFromId(subscription.getId(), callContext);
                     refreshedSubscription.changePlan(productName, billingPeriod, PriceListSet.DEFAULT_PRICELIST_NAME, clock.getUTCNow(), context);
                     return refreshedSubscription;
                 } catch (EntitlementUserApiException e) {
@@ -476,7 +467,7 @@ public class TestIntegrationBase extends BeatrixTestSuiteWithEmbeddedDB implemen
             public Subscription apply(@Nullable final Void dontcare) {
                 try {
                     // Need to fetch again to get latest CTD updated from the system
-                    final Subscription refreshedSubscription = entitlementUserApi.getSubscriptionFromId(subscription.getId());
+                    final Subscription refreshedSubscription = entitlementUserApi.getSubscriptionFromId(subscription.getId(), callContext);
                     refreshedSubscription.cancel(requestedDate, context);
                     return refreshedSubscription;
                 } catch (EntitlementUserApiException e) {

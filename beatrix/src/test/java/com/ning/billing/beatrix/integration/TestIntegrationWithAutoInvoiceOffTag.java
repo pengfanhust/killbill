@@ -25,7 +25,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Guice;
 import org.testng.annotations.Test;
 
-import com.google.inject.Inject;
 import com.ning.billing.account.api.Account;
 import com.ning.billing.api.TestApiListener.NextEvent;
 import com.ning.billing.catalog.api.BillingPeriod;
@@ -42,7 +41,8 @@ import com.ning.billing.util.api.TagUserApi;
 import com.ning.billing.util.dao.ObjectType;
 import com.ning.billing.util.tag.ControlTagType;
 import com.ning.billing.util.tag.Tag;
-import com.ning.billing.util.tag.TagDefinition;
+
+import com.google.inject.Inject;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
@@ -89,27 +89,27 @@ public class TestIntegrationWithAutoInvoiceOffTag extends TestIntegrationBase {
         assertTrue(busHandler.isCompleted(DELAY));
 
 
-        Collection<Invoice> invoices = invoiceApi.getInvoicesByAccount(account.getId());
+        Collection<Invoice> invoices = invoiceApi.getInvoicesByAccount(account.getId(), callContext);
         assertEquals(invoices.size(), 0);
 
         clock.addDays(10); // DAY 10 still in trial
         assertTrue(busHandler.isCompleted(DELAY));
 
-        invoices = invoiceApi.getInvoicesByAccount(account.getId());
+        invoices = invoiceApi.getInvoicesByAccount(account.getId(), callContext);
         assertEquals(invoices.size(), 0);
 
         busHandler.pushExpectedEvents(NextEvent.PHASE);
         clock.addDays(30); // DAY 40 out of trial
         assertTrue(busHandler.isCompleted(DELAY));
 
-        invoices = invoiceApi.getInvoicesByAccount(account.getId());
+        invoices = invoiceApi.getInvoicesByAccount(account.getId(), callContext);
         assertEquals(invoices.size(), 0);
 
         busHandler.pushExpectedEvents(NextEvent.INVOICE);
         remove_AUTO_INVOICING_OFF_Tag(account.getId(), ObjectType.ACCOUNT);
         assertTrue(busHandler.isCompleted(DELAY));
 
-        invoices = invoiceApi.getInvoicesByAccount(account.getId());
+        invoices = invoiceApi.getInvoicesByAccount(account.getId(), callContext);
         assertEquals(invoices.size(), 1);
     }
 
@@ -124,7 +124,7 @@ public class TestIntegrationWithAutoInvoiceOffTag extends TestIntegrationBase {
         assertNotNull(baseSubscription);
         assertTrue(busHandler.isCompleted(DELAY));
 
-        Collection<Invoice> invoices = invoiceApi.getInvoicesByAccount(account.getId());
+        Collection<Invoice> invoices = invoiceApi.getInvoicesByAccount(account.getId(), callContext);
         assertEquals(invoices.size(), 1); // first invoice is generated immediately after creation can't reliably stop it
 
 
@@ -134,7 +134,7 @@ public class TestIntegrationWithAutoInvoiceOffTag extends TestIntegrationBase {
         clock.addDays(40); // DAY 40 out of trial
         assertTrue(busHandler.isCompleted(DELAY));
 
-        invoices = invoiceApi.getInvoicesByAccount(account.getId());
+        invoices = invoiceApi.getInvoicesByAccount(account.getId(), callContext);
         assertEquals(invoices.size(), 1); //No additional invoices generated
 
     }
@@ -159,7 +159,7 @@ public class TestIntegrationWithAutoInvoiceOffTag extends TestIntegrationBase {
         assertNotNull(baseSubscription2);
         assertTrue(busHandler.isCompleted(DELAY));
 
-        Collection<Invoice> invoices = invoiceApi.getInvoicesByAccount(account.getId());
+        Collection<Invoice> invoices = invoiceApi.getInvoicesByAccount(account.getId(), callContext);
         assertEquals(invoices.size(), 2); // first invoice is generated immediately after creation can't reliably stop it
 
         add_AUTO_INVOICING_OFF_Tag(baseSubscription.getBundleId(), ObjectType.BUNDLE);
@@ -168,14 +168,14 @@ public class TestIntegrationWithAutoInvoiceOffTag extends TestIntegrationBase {
         clock.addDays(40); // DAY 40 out of trial
         assertTrue(busHandler.isCompleted(DELAY));
 
-        invoices = invoiceApi.getInvoicesByAccount(account.getId());
+        invoices = invoiceApi.getInvoicesByAccount(account.getId(), callContext);
         assertEquals(invoices.size(), 3); // Only one additional invoice generated
     }
 
 
     private void add_AUTO_INVOICING_OFF_Tag(final UUID id, final ObjectType type) throws TagDefinitionApiException, TagApiException {
         tagApi.addTag(id, type, ControlTagType.AUTO_INVOICING_OFF.getId(), context);
-        final Map<String, Tag> tags = tagApi.getTags(id, type);
+        final Map<String, Tag> tags = tagApi.getTags(id, type, callContext);
         assertEquals(tags.size(), 1);
     }
 

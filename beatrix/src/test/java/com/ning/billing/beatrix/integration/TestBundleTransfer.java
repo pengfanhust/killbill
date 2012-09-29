@@ -15,10 +15,6 @@
  */
 package com.ning.billing.beatrix.integration;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
-
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -27,7 +23,6 @@ import org.joda.time.LocalDate;
 import org.testng.annotations.Guice;
 import org.testng.annotations.Test;
 
-import com.google.common.collect.ImmutableList;
 import com.ning.billing.account.api.Account;
 import com.ning.billing.account.api.BillCycleDay;
 import com.ning.billing.api.TestApiListener.NextEvent;
@@ -41,6 +36,12 @@ import com.ning.billing.entitlement.api.user.SubscriptionData;
 import com.ning.billing.invoice.api.Invoice;
 import com.ning.billing.invoice.api.InvoiceItem;
 import com.ning.billing.invoice.api.InvoiceItemType;
+
+import com.google.common.collect.ImmutableList;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 @Guice(modules = {BeatrixModule.class})
 public class TestBundleTransfer extends TestIntegrationBase {
@@ -73,9 +74,9 @@ public class TestBundleTransfer extends TestIntegrationBase {
         assertNotNull(bpSubscription);
         assertTrue(busHandler.isCompleted(DELAY));
         assertListenerStatus();
-        assertEquals(invoiceUserApi.getInvoicesByAccount(account.getId()).size(), 1);
+        assertEquals(invoiceUserApi.getInvoicesByAccount(account.getId(), callContext).size(), 1);
 
-        assertEquals(entitlementUserApi.getSubscriptionFromId(bpSubscription.getId()).getCurrentPlan().getBillingPeriod(), BillingPeriod.ANNUAL);
+        assertEquals(entitlementUserApi.getSubscriptionFromId(bpSubscription.getId(), callContext).getCurrentPlan().getBillingPeriod(), BillingPeriod.ANNUAL);
 
         // Move out of trials for interesting invoices adjustments
         busHandler.pushExpectedEvent(NextEvent.PHASE);
@@ -95,7 +96,7 @@ public class TestBundleTransfer extends TestIntegrationBase {
         assertTrue(busHandler.isCompleted(DELAY));
         assertListenerStatus();
 
-        List<Invoice> invoices =invoiceUserApi.getInvoicesByAccount(newAccount.getId());
+        List<Invoice> invoices =invoiceUserApi.getInvoicesByAccount(newAccount.getId(), callContext);
         assertEquals(invoices.size(), 1);
 
         final List<InvoiceItem> invoiceItems = invoices.get(0).getInvoiceItems();
@@ -133,9 +134,9 @@ public class TestBundleTransfer extends TestIntegrationBase {
         assertNotNull(bpSubscription);
         assertTrue(busHandler.isCompleted(DELAY));
         assertListenerStatus();
-        assertEquals(invoiceUserApi.getInvoicesByAccount(account.getId()).size(), 1);
+        assertEquals(invoiceUserApi.getInvoicesByAccount(account.getId(), callContext).size(), 1);
 
-        assertEquals(entitlementUserApi.getSubscriptionFromId(bpSubscription.getId()).getCurrentPlan().getBillingPeriod(), BillingPeriod.MONTHLY);
+        assertEquals(entitlementUserApi.getSubscriptionFromId(bpSubscription.getId(), callContext).getCurrentPlan().getBillingPeriod(), BillingPeriod.MONTHLY);
 
         // Move out of trials for interesting invoices adjustments
         busHandler.pushExpectedEvent(NextEvent.PHASE);
@@ -156,13 +157,13 @@ public class TestBundleTransfer extends TestIntegrationBase {
         assertListenerStatus();
 
         // Verify the BCD of the new account
-        final BillCycleDay oldBCD = accountUserApi.getAccountById(account.getId()).getBillCycleDay();
-        final BillCycleDay newBCD = accountUserApi.getAccountById(newAccount.getId()).getBillCycleDay();
+        final BillCycleDay oldBCD = accountUserApi.getAccountById(account.getId(), callContext).getBillCycleDay();
+        final BillCycleDay newBCD = accountUserApi.getAccountById(newAccount.getId(), callContext).getBillCycleDay();
         assertEquals(oldBCD.getDayOfMonthUTC(), 1);
         // Day of the transfer
         assertEquals(newBCD.getDayOfMonthUTC(), 3);
 
-        final List<Invoice> invoices = invoiceUserApi.getInvoicesByAccount(newAccount.getId());
+        final List<Invoice> invoices = invoiceUserApi.getInvoicesByAccount(newAccount.getId(), callContext);
         assertEquals(invoices.size(), 1);
 
         final List<InvoiceItem> invoiceItems = invoices.get(0).getInvoiceItems();
@@ -200,9 +201,9 @@ public class TestBundleTransfer extends TestIntegrationBase {
         assertNotNull(bpSubscription);
         assertTrue(busHandler.isCompleted(DELAY));
         assertListenerStatus();
-        assertEquals(invoiceUserApi.getInvoicesByAccount(account.getId()).size(), 1);
+        assertEquals(invoiceUserApi.getInvoicesByAccount(account.getId(), callContext).size(), 1);
 
-        assertEquals(entitlementUserApi.getSubscriptionFromId(bpSubscription.getId()).getCurrentPlan().getBillingPeriod(), BillingPeriod.MONTHLY);
+        assertEquals(entitlementUserApi.getSubscriptionFromId(bpSubscription.getId(), callContext).getCurrentPlan().getBillingPeriod(), BillingPeriod.MONTHLY);
 
         // Move out of trials for interesting invoices adjustments
         busHandler.pushExpectedEvent(NextEvent.PHASE);
@@ -224,7 +225,7 @@ public class TestBundleTransfer extends TestIntegrationBase {
         assertTrue(busHandler.isCompleted(DELAY));
         assertListenerStatus();
 
-        List<Invoice> invoices =invoiceUserApi.getInvoicesByAccount(account.getId());
+        List<Invoice> invoices =invoiceUserApi.getInvoicesByAccount(account.getId(), callContext);
         assertEquals(invoices.size(), 3);
 
 
@@ -233,19 +234,19 @@ public class TestBundleTransfer extends TestIntegrationBase {
                 new ExpectedItemCheck(new LocalDate(2012,5,1), new LocalDate(2012,5,9), InvoiceItemType.RECURRING, new BigDecimal("66.66")),
                 new ExpectedItemCheck(new LocalDate(2012,5,1), new LocalDate(2012,5,9), InvoiceItemType.REPAIR_ADJ, new BigDecimal("-66.66")),
                 new ExpectedItemCheck(new LocalDate(2012,5,3), new LocalDate(2012,5,3), InvoiceItemType.CBA_ADJ, new BigDecimal("66.66")));
-        invoiceChecker.checkInvoice(invoices.get(1).getId(), toBeChecked);
+        invoiceChecker.checkInvoice(invoices.get(1).getId(), callContext, toBeChecked);
 
         toBeChecked = ImmutableList.<ExpectedItemCheck>of(
                 new ExpectedItemCheck(new LocalDate(2012,5,1), new LocalDate(2012,5,3), InvoiceItemType.RECURRING, new BigDecimal("16.67")),
                 new ExpectedItemCheck(new LocalDate(2012,5,3), new LocalDate(2012,5,3), InvoiceItemType.CBA_ADJ, new BigDecimal("-16.67")));
-        invoiceChecker.checkInvoice(invoices.get(2).getId(), toBeChecked);
+        invoiceChecker.checkInvoice(invoices.get(2).getId(), callContext, toBeChecked);
 
         // CHECK NEW ACCOUNT ITEMS
-        invoices =invoiceUserApi.getInvoicesByAccount(newAccount.getId());
+        invoices =invoiceUserApi.getInvoicesByAccount(newAccount.getId(), callContext);
         assertEquals(invoices.size(), 1);
 
         toBeChecked = ImmutableList.<ExpectedItemCheck>of(
                 new ExpectedItemCheck(new LocalDate(2012,5,3), new LocalDate(2012,5,15), InvoiceItemType.RECURRING, new BigDecimal("99.98")));
-        invoiceChecker.checkInvoice(invoices.get(0).getId(), toBeChecked);
+        invoiceChecker.checkInvoice(invoices.get(0).getId(), callContext, toBeChecked);
     }
 }
