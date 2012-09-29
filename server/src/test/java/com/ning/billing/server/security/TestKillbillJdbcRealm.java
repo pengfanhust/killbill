@@ -34,7 +34,6 @@ import com.ning.billing.server.ServerTestSuiteWithEmbeddedDB;
 import com.ning.billing.tenant.api.DefaultTenant;
 import com.ning.billing.tenant.dao.DefaultTenantDao;
 import com.ning.billing.util.bus.Bus;
-import com.ning.billing.util.callcontext.TestCallContext;
 
 import com.jolbox.bonecp.BoneCPConfig;
 import com.jolbox.bonecp.BoneCPDataSource;
@@ -50,7 +49,7 @@ public class TestKillbillJdbcRealm extends ServerTestSuiteWithEmbeddedDB {
         final DefaultTenantDao tenantDao = new DefaultTenantDao(getMysqlTestingHelper().getDBI(), Mockito.mock(Bus.class));
         tenant = new DefaultTenant(UUID.randomUUID(), UUID.randomUUID().toString(),
                                    UUID.randomUUID().toString(), UUID.randomUUID().toString());
-        tenantDao.create(tenant, new TestCallContext("tester"));
+        tenantDao.create(tenant, internalCallContext);
 
         // Setup the security manager
         final BoneCPConfig dbConfig = new BoneCPConfig();
