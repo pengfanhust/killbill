@@ -23,22 +23,25 @@ import org.skife.jdbi.v2.DBI;
 import com.ning.billing.usage.timeline.persistent.CachingTimelineDao;
 import com.ning.billing.usage.timeline.persistent.DefaultTimelineDao;
 import com.ning.billing.usage.timeline.persistent.TimelineDao;
+import com.ning.billing.util.callcontext.InternalCallContextFactory;
 
 import com.google.inject.Inject;
 
 public class CachingDefaultTimelineDaoProvider implements Provider<TimelineDao> {
 
     private final DBI dbi;
+    private final InternalCallContextFactory internalCallContextFactory;
 
     @Inject
-    public CachingDefaultTimelineDaoProvider(final DBI dbi) {
+    public CachingDefaultTimelineDaoProvider(final DBI dbi, final InternalCallContextFactory internalCallContextFactory) {
         this.dbi = dbi;
+        this.internalCallContextFactory = internalCallContextFactory;
     }
 
     @Override
     public TimelineDao get() {
         final TimelineDao delegate = new DefaultTimelineDao(dbi);
 
-        return new CachingTimelineDao(delegate);
+        return new CachingTimelineDao(delegate, internalCallContextFactory);
     }
 }
