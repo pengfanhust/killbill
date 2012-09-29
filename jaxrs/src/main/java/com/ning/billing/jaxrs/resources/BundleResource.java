@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -91,7 +91,7 @@ public class BundleResource extends JaxRsResourceBase {
     @Path("/{bundleId:" + UUID_PATTERN + "}")
     @Produces(APPLICATION_JSON)
     public Response getBundle(@PathParam("bundleId") final String bundleId,
-                              @javax.ws.rs.core.Context final ServletRequest request) throws EntitlementUserApiException {
+                              @javax.ws.rs.core.Context final HttpServletRequest request) throws EntitlementUserApiException {
         final SubscriptionBundle bundle = entitlementApi.getBundleFromId(UUID.fromString(bundleId), context.createContext(request));
         final BundleJsonNoSubscriptions json = new BundleJsonNoSubscriptions(bundle);
         return Response.status(Status.OK).entity(json).build();
@@ -104,7 +104,7 @@ public class BundleResource extends JaxRsResourceBase {
                                  @HeaderParam(HDR_CREATED_BY) final String createdBy,
                                  @HeaderParam(HDR_REASON) final String reason,
                                  @HeaderParam(HDR_COMMENT) final String comment,
-                                 @javax.ws.rs.core.Context final ServletRequest request) throws EntitlementUserApiException {
+                                 @javax.ws.rs.core.Context final HttpServletRequest request) throws EntitlementUserApiException {
         final UUID accountId = UUID.fromString(json.getAccountId());
         final SubscriptionBundle bundle = entitlementApi.createBundleForAccount(accountId, json.getExternalKey(),
                                                                                 context.createContext(createdBy, reason, comment, request));
@@ -115,7 +115,7 @@ public class BundleResource extends JaxRsResourceBase {
     @Path("/{bundleId:" + UUID_PATTERN + "}/" + SUBSCRIPTIONS)
     @Produces(APPLICATION_JSON)
     public Response getBundleSubscriptions(@PathParam("bundleId") final String bundleId,
-                                           @javax.ws.rs.core.Context final ServletRequest request) throws EntitlementUserApiException {
+                                           @javax.ws.rs.core.Context final HttpServletRequest request) throws EntitlementUserApiException {
         final TenantContext tenantContext = context.createContext(request);
         final UUID uuid = UUID.fromString(bundleId);
         final SubscriptionBundle bundle = entitlementApi.getBundleFromId(uuid, tenantContext);
@@ -136,7 +136,7 @@ public class BundleResource extends JaxRsResourceBase {
     @Path("/{bundleId:" + UUID_PATTERN + "}/" + CUSTOM_FIELD_URI)
     @Produces(APPLICATION_JSON)
     public Response getCustomFields(@PathParam(ID_PARAM_NAME) final String id,
-                                    @javax.ws.rs.core.Context final ServletRequest request) {
+                                    @javax.ws.rs.core.Context final HttpServletRequest request) {
         return super.getCustomFields(UUID.fromString(id), context.createContext(request));
     }
 
@@ -149,7 +149,7 @@ public class BundleResource extends JaxRsResourceBase {
                                        @HeaderParam(HDR_CREATED_BY) final String createdBy,
                                        @HeaderParam(HDR_REASON) final String reason,
                                        @HeaderParam(HDR_COMMENT) final String comment,
-                                       @javax.ws.rs.core.Context final ServletRequest request) {
+                                       @javax.ws.rs.core.Context final HttpServletRequest request) {
         return super.createCustomFields(UUID.fromString(id), customFields,
                                         context.createContext(createdBy, reason, comment, request));
     }
@@ -163,7 +163,7 @@ public class BundleResource extends JaxRsResourceBase {
                                        @HeaderParam(HDR_CREATED_BY) final String createdBy,
                                        @HeaderParam(HDR_REASON) final String reason,
                                        @HeaderParam(HDR_COMMENT) final String comment,
-                                       @javax.ws.rs.core.Context final ServletRequest request) {
+                                       @javax.ws.rs.core.Context final HttpServletRequest request) {
         return super.deleteCustomFields(UUID.fromString(id), customFieldList,
                                         context.createContext(createdBy, reason, comment, request));
     }
@@ -173,7 +173,7 @@ public class BundleResource extends JaxRsResourceBase {
     @Produces(APPLICATION_JSON)
     public Response getTags(@PathParam(ID_PARAM_NAME) final String id,
                             @QueryParam(QUERY_AUDIT) @DefaultValue("false") final Boolean withAudit,
-                            @javax.ws.rs.core.Context final ServletRequest request) throws TagDefinitionApiException {
+                            @javax.ws.rs.core.Context final HttpServletRequest request) throws TagDefinitionApiException {
         return super.getTags(UUID.fromString(id), withAudit, context.createContext(request));
     }
 
@@ -190,7 +190,7 @@ public class BundleResource extends JaxRsResourceBase {
                                    @HeaderParam(HDR_REASON) final String reason,
                                    @HeaderParam(HDR_COMMENT) final String comment,
                                    @javax.ws.rs.core.Context final UriInfo uriInfo,
-                                   @javax.ws.rs.core.Context final ServletRequest request) throws EntitlementUserApiException, EntitlementTransferApiException {
+                                   @javax.ws.rs.core.Context final HttpServletRequest request) throws EntitlementUserApiException, EntitlementTransferApiException {
         final CallContext callContext = context.createContext(createdBy, reason, comment, request);
         final SubscriptionBundle bundle = entitlementApi.getBundleFromId(UUID.fromString(id), callContext);
         final DateTime inputDate = (requestedDate != null) ? DATE_TIME_FORMATTER.parseDateTime(requestedDate) : null;
@@ -210,7 +210,7 @@ public class BundleResource extends JaxRsResourceBase {
                                @HeaderParam(HDR_REASON) final String reason,
                                @HeaderParam(HDR_COMMENT) final String comment,
                                @javax.ws.rs.core.Context final UriInfo uriInfo,
-                               @javax.ws.rs.core.Context final ServletRequest request) throws TagApiException {
+                               @javax.ws.rs.core.Context final HttpServletRequest request) throws TagApiException {
         return super.createTags(UUID.fromString(id), tagList, uriInfo,
                                 context.createContext(createdBy, reason, comment, request));
     }
@@ -224,7 +224,7 @@ public class BundleResource extends JaxRsResourceBase {
                                @HeaderParam(HDR_CREATED_BY) final String createdBy,
                                @HeaderParam(HDR_REASON) final String reason,
                                @HeaderParam(HDR_COMMENT) final String comment,
-                               @javax.ws.rs.core.Context final ServletRequest request) throws TagApiException {
+                               @javax.ws.rs.core.Context final HttpServletRequest request) throws TagApiException {
         return super.deleteTags(UUID.fromString(id), tagList,
                                 context.createContext(createdBy, reason, comment, request));
     }

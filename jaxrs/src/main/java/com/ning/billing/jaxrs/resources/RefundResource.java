@@ -18,7 +18,7 @@ package com.ning.billing.jaxrs.resources;
 
 import java.util.UUID;
 
-import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -61,7 +61,7 @@ public class RefundResource extends JaxRsResourceBase {
     @Path("/{refundId:" + UUID_PATTERN + "}")
     @Produces(APPLICATION_JSON)
     public Response getRefund(@PathParam("refundId") final String refundId,
-                              @javax.ws.rs.core.Context final ServletRequest request) throws PaymentApiException {
+                              @javax.ws.rs.core.Context final HttpServletRequest request) throws PaymentApiException {
         final Refund refund = paymentApi.getRefund(UUID.fromString(refundId), context.createContext(request));
         // TODO Return adjusted items and audits
         return Response.status(Status.OK).entity(new RefundJson(refund, null, null)).build();

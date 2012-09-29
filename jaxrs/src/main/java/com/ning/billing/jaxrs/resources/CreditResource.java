@@ -18,7 +18,7 @@ package com.ning.billing.jaxrs.resources;
 
 import java.util.UUID;
 
-import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -75,7 +75,7 @@ public class CreditResource extends JaxRsResourceBase {
     @Path("/{creditId:" + UUID_PATTERN + "}")
     @Produces(APPLICATION_JSON)
     public Response getCredit(@PathParam("creditId") final String creditId,
-                              @javax.ws.rs.core.Context final ServletRequest request) throws InvoiceApiException, AccountApiException {
+                              @javax.ws.rs.core.Context final HttpServletRequest request) throws InvoiceApiException, AccountApiException {
         final TenantContext tenantContext = context.createContext(request);
         final InvoiceItem credit = invoiceUserApi.getCreditById(UUID.fromString(creditId), tenantContext);
         final Account account = accountUserApi.getAccountById(credit.getAccountId(), tenantContext);
@@ -90,7 +90,7 @@ public class CreditResource extends JaxRsResourceBase {
                                  @HeaderParam(HDR_CREATED_BY) final String createdBy,
                                  @HeaderParam(HDR_REASON) final String reason,
                                  @HeaderParam(HDR_COMMENT) final String comment,
-                                 @javax.ws.rs.core.Context final ServletRequest request) throws AccountApiException, InvoiceApiException {
+                                 @javax.ws.rs.core.Context final HttpServletRequest request) throws AccountApiException, InvoiceApiException {
         final CallContext callContext = context.createContext(createdBy, reason, comment, request);
 
         final Account account = accountUserApi.getAccountById(UUID.fromString(json.getAccountId()), callContext);

@@ -19,7 +19,7 @@ package com.ning.billing.jaxrs.resources;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -65,13 +65,13 @@ public class CatalogResource extends JaxRsResourceBase {
 
     @GET
     @Produces(APPLICATION_XML)
-    public Response getCatalogXml(@javax.ws.rs.core.Context final ServletRequest request) throws Exception {
+    public Response getCatalogXml(@javax.ws.rs.core.Context final HttpServletRequest request) throws Exception {
         return Response.status(Status.OK).entity(XMLWriter.writeXML(catalogService.getCurrentCatalog(), StaticCatalog.class)).build();
     }
 
     @GET
     @Produces(APPLICATION_JSON)
-    public Response getCatalogJson(@javax.ws.rs.core.Context final ServletRequest request) throws Exception {
+    public Response getCatalogJson(@javax.ws.rs.core.Context final HttpServletRequest request) throws Exception {
         final StaticCatalog catalog = catalogService.getCurrentCatalog();
 
         return Response.status(Status.OK).entity(catalog).build();
@@ -95,7 +95,7 @@ public class CatalogResource extends JaxRsResourceBase {
     @Path("/availableAddons")
     @Produces(APPLICATION_JSON)
     public Response getAvailableAddons(@QueryParam("baseProductName") final String baseProductName,
-                                       @javax.ws.rs.core.Context final ServletRequest request) throws CatalogApiException {
+                                       @javax.ws.rs.core.Context final HttpServletRequest request) throws CatalogApiException {
         final StaticCatalog catalog = catalogService.getCurrentCatalog();
         final List<Listing> listings = catalog.getAvailableAddonListings(baseProductName);
         final List<PlanDetailJason> details = new ArrayList<PlanDetailJason>();
@@ -108,7 +108,7 @@ public class CatalogResource extends JaxRsResourceBase {
     @GET
     @Path("/availableBasePlans")
     @Produces(APPLICATION_JSON)
-    public Response getAvailableBasePlans(@javax.ws.rs.core.Context final ServletRequest request) throws CatalogApiException {
+    public Response getAvailableBasePlans(@javax.ws.rs.core.Context final HttpServletRequest request) throws CatalogApiException {
         final StaticCatalog catalog = catalogService.getCurrentCatalog();
         final List<Listing> listings = catalog.getAvailableBasePlanListings();
         final List<PlanDetailJason> details = new ArrayList<PlanDetailJason>();
@@ -121,7 +121,7 @@ public class CatalogResource extends JaxRsResourceBase {
     @GET
     @Path("/simpleCatalog")
     @Produces(APPLICATION_JSON)
-    public Response getSimpleCatalog(@javax.ws.rs.core.Context final ServletRequest request) throws CatalogApiException {
+    public Response getSimpleCatalog(@javax.ws.rs.core.Context final HttpServletRequest request) throws CatalogApiException {
         final StaticCatalog catalog = catalogService.getCurrentCatalog();
 
         final CatalogJsonSimple json = new CatalogJsonSimple(catalog);

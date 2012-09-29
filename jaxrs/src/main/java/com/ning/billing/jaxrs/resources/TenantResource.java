@@ -18,7 +18,7 @@ package com.ning.billing.jaxrs.resources;
 
 import java.util.UUID;
 
-import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -86,7 +86,7 @@ public class TenantResource extends JaxRsResourceBase {
                                  @HeaderParam(HDR_CREATED_BY) final String createdBy,
                                  @HeaderParam(HDR_REASON) final String reason,
                                  @HeaderParam(HDR_COMMENT) final String comment,
-                                 @javax.ws.rs.core.Context final ServletRequest request) throws TenantApiException {
+                                 @javax.ws.rs.core.Context final HttpServletRequest request) throws TenantApiException {
         final TenantData data = json.toTenantData();
         final Tenant tenant = tenantApi.createTenant(data, context.createContext(createdBy, reason, comment, request));
         return uriBuilder.buildResponse(TenantResource.class, "getTenant", tenant.getId());

@@ -18,7 +18,7 @@ package com.ning.billing.jaxrs.resources;
 
 import java.util.UUID;
 
-import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -77,7 +77,7 @@ public class OverdueResource extends JaxRsResourceBase {
     @Path("/" + ACCOUNTS + "/{accountId:" + UUID_PATTERN + "}")
     @Produces(APPLICATION_JSON)
     public Response getOverdueAccount(@PathParam("accountId") final String accountId,
-                                      @javax.ws.rs.core.Context final ServletRequest request) throws AccountApiException, OverdueException, OverdueApiException {
+                                      @javax.ws.rs.core.Context final HttpServletRequest request) throws AccountApiException, OverdueException, OverdueApiException {
         final TenantContext tenantContext = context.createContext(request);
 
         final Account account = accountApi.getAccountById(UUID.fromString(accountId), tenantContext);
@@ -90,7 +90,7 @@ public class OverdueResource extends JaxRsResourceBase {
     @Path("/" + BUNDLES + "/{bundleId:" + UUID_PATTERN + "}")
     @Produces(APPLICATION_JSON)
     public Response getOverdueBundle(@PathParam("bundleId") final String bundleId,
-                                     @javax.ws.rs.core.Context final ServletRequest request) throws EntitlementUserApiException, OverdueException, OverdueApiException {
+                                     @javax.ws.rs.core.Context final HttpServletRequest request) throws EntitlementUserApiException, OverdueException, OverdueApiException {
         final TenantContext tenantContext = context.createContext(request);
 
         final SubscriptionBundle bundle = entitlementApi.getBundleFromId(UUID.fromString(bundleId), tenantContext);
@@ -103,7 +103,7 @@ public class OverdueResource extends JaxRsResourceBase {
     @Path("/" + SUBSCRIPTIONS + "/{subscriptionId:" + UUID_PATTERN + "}")
     @Produces(APPLICATION_JSON)
     public Response getOverdueSubscription(@PathParam("subscriptionId") final String subscriptionId,
-                                           @javax.ws.rs.core.Context final ServletRequest request) throws EntitlementUserApiException, OverdueException, OverdueApiException {
+                                           @javax.ws.rs.core.Context final HttpServletRequest request) throws EntitlementUserApiException, OverdueException, OverdueApiException {
         final TenantContext tenantContext = context.createContext(request);
 
         final Subscription subscription = entitlementApi.getSubscriptionFromId(UUID.fromString(subscriptionId), tenantContext);

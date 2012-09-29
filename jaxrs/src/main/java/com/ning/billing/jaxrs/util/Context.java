@@ -33,6 +33,8 @@ import com.google.inject.Inject;
 
 public class Context {
 
+    private static final UUID DEFAULT_TENANT_ID = new UUID(1, 1);
+
     private final CallOrigin origin;
     private final UserType userType;
     final CallContextFactory contextFactory;
@@ -55,6 +57,12 @@ public class Context {
     }
 
     public TenantContext createContext(final ServletRequest request) {
-        return contextFactory.createTenantContext(((Tenant) request.getAttribute("killbill_tenant")).getId());
+        final Object tenantObject = request.getAttribute("killbill_tenant");
+        if (tenantObject == null) {
+            // TODO
+            return contextFactory.createTenantContext(DEFAULT_TENANT_ID);
+        } else {
+            return contextFactory.createTenantContext(((Tenant) tenantObject).getId());
+        }
     }
 }

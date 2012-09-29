@@ -17,7 +17,7 @@
 package com.ning.billing.jaxrs.resources;
 
 import javax.inject.Inject;
-import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -58,7 +58,7 @@ public class AnalyticsResource extends JaxRsResourceBase {
     @GET
     @Path("/accountsCreatedOverTime")
     @Produces(APPLICATION_JSON)
-    public Response getAccountsCreatedOverTime(@javax.ws.rs.core.Context final ServletRequest request) {
+    public Response getAccountsCreatedOverTime(@javax.ws.rs.core.Context final HttpServletRequest request) {
         final TimeSeriesData data = analyticsUserApi.getAccountsCreatedOverTime(context.createContext(request));
         final TimeSeriesDataJson json = new TimeSeriesDataJson(data);
         return Response.status(Status.OK).entity(json).build();
@@ -69,7 +69,7 @@ public class AnalyticsResource extends JaxRsResourceBase {
     @Produces(APPLICATION_JSON)
     public Response getSubscriptionsCreatedOverTime(@QueryParam("productType") final String productType,
                                                     @QueryParam("slug") final String slug,
-                                                    @javax.ws.rs.core.Context final ServletRequest request) {
+                                                    @javax.ws.rs.core.Context final HttpServletRequest request) {
         final TimeSeriesData data = analyticsUserApi.getSubscriptionsCreatedOverTime(productType, slug, context.createContext(request));
         final TimeSeriesDataJson json = new TimeSeriesDataJson(data);
         return Response.status(Status.OK).entity(json).build();
