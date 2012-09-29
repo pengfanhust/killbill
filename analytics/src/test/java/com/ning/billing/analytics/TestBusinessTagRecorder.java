@@ -55,6 +55,7 @@ import com.ning.billing.util.bus.InMemoryBus;
 import com.ning.billing.util.callcontext.CallContext;
 import com.ning.billing.util.callcontext.CallOrigin;
 import com.ning.billing.util.callcontext.DefaultCallContextFactory;
+import com.ning.billing.util.callcontext.InternalCallContextFactory;
 import com.ning.billing.util.callcontext.UserType;
 import com.ning.billing.util.clock.DefaultClock;
 import com.ning.billing.util.dao.ObjectType;
@@ -81,16 +82,17 @@ public class TestBusinessTagRecorder extends AnalyticsTestSuiteWithEmbeddedDB {
         final AccountEmailDao accountEmailDao = new AuditedAccountEmailDao(dbi);
         final DefaultClock clock = new DefaultClock();
         callContextFactory = new DefaultCallContextFactory(clock);
-        accountUserApi = new DefaultAccountUserApi(callContextFactory, accountDao, accountEmailDao);
+        final InternalCallContextFactory internalCallContextFactory = new InternalCallContextFactory(clock);
+        accountUserApi = new DefaultAccountUserApi(callContextFactory, internalCallContextFactory, accountDao, accountEmailDao);
         final CatalogService catalogService = new DefaultCatalogService(Mockito.mock(CatalogConfig.class), Mockito.mock(VersionedCatalogLoader.class));
         final AddonUtils addonUtils = new AddonUtils(catalogService);
-        final DefaultNotificationQueueService notificationQueueService = new DefaultNotificationQueueService(dbi, clock);
+        final DefaultNotificationQueueService notificationQueueService = new DefaultNotificationQueueService(dbi, clock, internalCallContextFactory);
         final EntitlementDao entitlementDao = new AuditedEntitlementDao(dbi, clock, addonUtils, notificationQueueService, eventBus, catalogService);
         final PlanAligner planAligner = new PlanAligner(catalogService);
-        final DefaultSubscriptionApiService apiService = new DefaultSubscriptionApiService(clock, entitlementDao, catalogService, planAligner);
+        final DefaultSubscriptionApiService apiService = new DefaultSubscriptionApiService(clock, entitlementDao, catalogService, planAligner, internalCallContextFactory);
         final DefaultSubscriptionFactory subscriptionFactory = new DefaultSubscriptionFactory(apiService, clock, catalogService);
         entitlementUserApi = new DefaultEntitlementUserApi(clock, entitlementDao, catalogService,
-                                                           apiService, subscriptionFactory, addonUtils);
+                                                           apiService, subscriptionFactory, addonUtils, internalCallContextFactory);
         tagRecorder = new BusinessTagRecorder(accountTagSqlDao, invoicePaymentTagSqlDao, invoiceTagSqlDao, subscriptionTransitionTagSqlDao,
                                               accountUserApi, entitlementUserApi);
 
@@ -115,11 +117,11 @@ public class TestBusinessTagRecorder extends AnalyticsTestSuiteWithEmbeddedDB {
         final Account account = accountUserApi.createAccount(accountData, callContext);
         final UUID accountId = account.getId();
 
-        Assert.assertEquals(accountTagSqlDao.getTagsForAccountByKey(accountKey).size(), 0);
-        tagRecorder.tagAdded(ObjectType.ACCOUNT, accountId, name);
-        Assert.assertEquals(accountTagSqlDao.getTagsForAccountByKey(accountKey).size(), 1);
-        tagRecorder.tagRemoved(ObjectType.ACCOUNT, accountId, name);
-        Assert.assertEquals(accountTagSqlDao.getTagsForAccountByKey(accountKey).size(), 0);
+        Assert.assertEquals(accountTagSqlDao.getTagsForAccountByKey(accountKey, internalCallContext).size(), 0);
+        tagRecorder.tagAdded(ObjectType.ACCOUNT, accountId, name, internalCallContext);
+        Assert.assertEquals(accountTagSqlDao.getTagsForAccountByKey(accountKey, internalCallContext).size(), 1);
+        tagRecorder.tagRemoved(ObjectType.ACCOUNT, accountId, name, internalCallContext);
+        Assert.assertEquals(accountTagSqlDao.getTagsForAccountByKey(accountKey, internalCallContext).size(), 0);
     }
 
     @Test(groups = "slow")
@@ -135,10 +137,10 @@ public class TestBusinessTagRecorder extends AnalyticsTestSuiteWithEmbeddedDB {
         final SubscriptionBundle bundle = entitlementUserApi.createBundleForAccount(account.getId(), externalKey, callContext);
         final UUID bundleId = bundle.getId();
 
-        Assert.assertEquals(subscriptionTransitionTagSqlDao.getTagsForBusinessSubscriptionTransitionByKey(externalKey).size(), 0);
-        tagRecorder.tagAdded(ObjectType.BUNDLE, bundleId, name);
-        Assert.assertEquals(subscriptionTransitionTagSqlDao.getTagsForBusinessSubscriptionTransitionByKey(externalKey).size(), 1);
-        tagRecorder.tagRemoved(ObjectType.BUNDLE, bundleId, name);
-        Assert.assertEquals(subscriptionTransitionTagSqlDao.getTagsForBusinessSubscriptionTransitionByKey(externalKey).size(), 0);
+        Assert.assertEquals(subscriptionTransitionTagSqlDao.getTagsForBusinessSubscriptionTransitionByKey(externalKey, internalCallContext).size(), 0);
+        tagRecorder.tagAdded(ObjectType.BUNDLE, bundleId, name, internalCallContext);
+        Assert.assertEquals(subscriptionTransitionTagSqlDao.getTagsForBusinessSubscriptionTransitionByKey(externalKey, internalCallContext).size(), 1);
+        tagRecorder.tagRemoved(ObjectType.BUNDLE, bundleId, name, internalCallContext);
+        Assert.assertEquals(subscriptionTransitionTagSqlDao.getTagsForBusinessSubscriptionTransitionByKey(externalKey, internalCallContext).size(), 0);
     }
 }
