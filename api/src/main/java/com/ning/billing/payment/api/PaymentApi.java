@@ -111,7 +111,7 @@ public interface PaymentApi {
      */
     public Set<String> getAvailablePlugins();
 
-    public String initializeAccountPlugin(String pluginName, Account account, TenantContext context)
+    public String initializeAccountPlugin(String pluginName, Account account, CallContext context)
             throws PaymentApiException;
 
     public UUID addPaymentMethod(String pluginName, Account account, boolean setDefault, PaymentMethodPlugin paymentMethodInfo, CallContext context)
