@@ -46,9 +46,7 @@ import com.ning.billing.invoice.notification.MockNextBillingDatePoster;
 import com.ning.billing.invoice.notification.NextBillingDatePoster;
 import com.ning.billing.util.api.TagUserApi;
 import com.ning.billing.util.bus.Bus;
-import com.ning.billing.util.callcontext.CallContext;
 import com.ning.billing.util.callcontext.InternalCallContextFactory;
-import com.ning.billing.util.callcontext.TestCallContext;
 import com.ning.billing.util.clock.Clock;
 import com.ning.billing.util.clock.ClockMock;
 import com.ning.billing.util.tag.api.DefaultTagUserApi;
@@ -73,7 +71,6 @@ public class TestDefaultInvoicePaymentApi extends InvoiceTestSuiteWithEmbeddedDB
     private InvoiceSqlDao invoiceSqlDao;
     private InvoiceItemSqlDao invoiceItemSqlDao;
     private InvoicePaymentApi invoicePaymentApi;
-    private CallContext context;
     private InternalCallContextFactory internalCallContextFactory;
 
     @BeforeSuite(groups = "slow")
@@ -94,8 +91,6 @@ public class TestDefaultInvoicePaymentApi extends InvoiceTestSuiteWithEmbeddedDB
         final TagUserApi tagUserApi = new DefaultTagUserApi(internalCallContextFactory, tagDefinitionDao, tagDao);
         final InvoiceDao invoiceDao = new AuditedInvoiceDao(dbi, nextBillingDatePoster, tagUserApi, clock, Mockito.mock(Bus.class));
         invoicePaymentApi = new DefaultInvoicePaymentApi(invoiceDao, internalCallContextFactory);
-
-        context = new TestCallContext("Invoice payment tests");
     }
 
     @Test(groups = "slow")
@@ -122,7 +117,7 @@ public class TestDefaultInvoicePaymentApi extends InvoiceTestSuiteWithEmbeddedDB
     public void testFullRefundWithBothInvoiceItemAdjustments() throws Exception {
         // Create an invoice with two items (30 \u20ac and 10 \u20ac)
         final Invoice invoice = createAndPersistInvoice(invoiceSqlDao, invoiceItemSqlDao, clock,
-                                                        ImmutableList.<BigDecimal>of(THIRTY, BigDecimal.TEN), CURRENCY, context, internalCallContextFactory);
+                                                        ImmutableList.<BigDecimal>of(THIRTY, BigDecimal.TEN), CURRENCY, callContext, internalCallContextFactory);
 
         // Fully adjust both items
         final Map<UUID, BigDecimal> adjustments = new HashMap<UUID, BigDecimal>();
@@ -136,7 +131,7 @@ public class TestDefaultInvoicePaymentApi extends InvoiceTestSuiteWithEmbeddedDB
     public void testPartialRefundWithSingleInvoiceItemAdjustment() throws Exception {
         // Create an invoice with two items (30 \u20ac and 10 \u20ac)
         final Invoice invoice = createAndPersistInvoice(invoiceSqlDao, invoiceItemSqlDao, clock,
-                                                        ImmutableList.<BigDecimal>of(THIRTY, BigDecimal.TEN), CURRENCY, context, internalCallContextFactory);
+                                                        ImmutableList.<BigDecimal>of(THIRTY, BigDecimal.TEN), CURRENCY, callContext, internalCallContextFactory);
 
         // Fully adjust both items
         final Map<UUID, BigDecimal> adjustments = new HashMap<UUID, BigDecimal>();
@@ -149,7 +144,7 @@ public class TestDefaultInvoicePaymentApi extends InvoiceTestSuiteWithEmbeddedDB
     public void testPartialRefundWithTwoInvoiceItemAdjustment() throws Exception {
         // Create an invoice with two items (30 \u20ac and 10 \u20ac)
         final Invoice invoice = createAndPersistInvoice(invoiceSqlDao, invoiceItemSqlDao, clock,
-                                                        ImmutableList.<BigDecimal>of(THIRTY, BigDecimal.TEN), CURRENCY, context, internalCallContextFactory);
+                                                        ImmutableList.<BigDecimal>of(THIRTY, BigDecimal.TEN), CURRENCY, callContext, internalCallContextFactory);
         // Adjust partially both items: the invoice posted was 40 \u20ac, but we should really just have charged you 2 \u20ac
         final ImmutableMap<UUID, BigDecimal> adjustments = ImmutableMap.<UUID, BigDecimal>of(invoice.getInvoiceItems().get(0).getId(), new BigDecimal("29"),
                                                                                              invoice.getInvoiceItems().get(1).getId(), new BigDecimal("9"));
@@ -158,13 +153,13 @@ public class TestDefaultInvoicePaymentApi extends InvoiceTestSuiteWithEmbeddedDB
 
     private void verifyRefund(final BigDecimal invoiceAmount, final BigDecimal refundAmount, final BigDecimal finalInvoiceAmount,
                               final boolean adjusted, final Map<UUID, BigDecimal> invoiceItemIdsWithAmounts) throws InvoiceApiException {
-        final Invoice invoice = createAndPersistInvoice(invoiceSqlDao, invoiceItemSqlDao, clock, invoiceAmount, CURRENCY, context, internalCallContextFactory);
+        final Invoice invoice = createAndPersistInvoice(invoiceSqlDao, invoiceItemSqlDao, clock, invoiceAmount, CURRENCY, callContext, internalCallContextFactory);
         verifyRefund(invoice, invoiceAmount, refundAmount, finalInvoiceAmount, adjusted, invoiceItemIdsWithAmounts);
     }
 
     private void verifyRefund(final Invoice invoice, final BigDecimal invoiceAmount, final BigDecimal refundAmount, final BigDecimal finalInvoiceAmount,
                               final boolean adjusted, final Map<UUID, BigDecimal> invoiceItemIdsWithAmounts) throws InvoiceApiException {
-        final InvoicePayment payment = createAndPersistPayment(invoicePaymentApi, clock, invoice.getId(), invoiceAmount, CURRENCY, context);
+        final InvoicePayment payment = createAndPersistPayment(invoicePaymentApi, clock, invoice.getId(), invoiceAmount, CURRENCY, callContext);
 
         // Verify the initial invoice balance
         final BigDecimal initialInvoiceBalance = invoicePaymentApi.getInvoice(invoice.getId(), callContext).getBalance();
@@ -172,7 +167,7 @@ public class TestDefaultInvoicePaymentApi extends InvoiceTestSuiteWithEmbeddedDB
 
         // Create a full refund with no adjustment
         final InvoicePayment refund = invoicePaymentApi.createRefund(payment.getPaymentId(), refundAmount, adjusted, invoiceItemIdsWithAmounts,
-                                                                     UUID.randomUUID(), context);
+                                                                     UUID.randomUUID(), callContext);
         Assert.assertEquals(refund.getAmount().compareTo(refundAmount.negate()), 0);
         Assert.assertEquals(refund.getCurrency(), CURRENCY);
         Assert.assertEquals(refund.getInvoiceId(), invoice.getId());
