@@ -23,6 +23,7 @@ import java.util.UUID;
 
 import org.mockito.Mockito;
 import org.skife.config.SimplePropertyConfigSource;
+import org.skife.jdbi.v2.IDBI;
 
 import com.ning.billing.config.PaymentConfig;
 import com.ning.billing.mock.glue.MockInvoiceModule;
@@ -31,6 +32,8 @@ import com.ning.billing.payment.dao.MockPaymentDao;
 import com.ning.billing.payment.dao.PaymentDao;
 import com.ning.billing.payment.provider.MockPaymentProviderPluginModule;
 import com.ning.billing.util.api.TagUserApi;
+import com.ning.billing.util.callcontext.CallContextSqlDao;
+import com.ning.billing.util.callcontext.MockCallContextSqlDao;
 import com.ning.billing.util.callcontext.TenantContext;
 import com.ning.billing.util.dao.ObjectType;
 import com.ning.billing.util.globallocker.GlobalLocker;
@@ -65,6 +68,9 @@ public class PaymentTestModuleWithMocks extends PaymentModule {
 
     @Override
     protected void installPaymentDao() {
+        final IDBI idbi = Mockito.mock(IDBI.class);
+        Mockito.when(idbi.onDemand(CallContextSqlDao.class)).thenReturn(new MockCallContextSqlDao());
+        bind(IDBI.class).toInstance(idbi);
         bind(PaymentDao.class).to(MockPaymentDao.class).asEagerSingleton();
     }
 
