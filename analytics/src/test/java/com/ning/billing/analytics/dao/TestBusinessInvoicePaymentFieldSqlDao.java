@@ -87,7 +87,7 @@ public class TestBusinessInvoicePaymentFieldSqlDao extends AnalyticsTestSuiteWit
     public void testHealthCheck() throws Exception {
         // HealthCheck test to make sure MySQL is setup properly
         try {
-            invoicePaymentFieldSqlDao.test();
+            invoicePaymentFieldSqlDao.test(internalCallContext);
         } catch (Throwable t) {
             Assert.fail(t.toString());
         }

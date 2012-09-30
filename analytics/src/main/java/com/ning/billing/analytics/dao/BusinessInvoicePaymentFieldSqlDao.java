@@ -49,5 +49,5 @@ public interface BusinessInvoicePaymentFieldSqlDao {
                     @InternalTenantContextBinder final InternalCallContext context);
 
     @SqlUpdate
-    void test();
+    void test(@InternalTenantContextBinder final InternalTenantContext context);
 }
