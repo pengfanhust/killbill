@@ -19,7 +19,6 @@ getNextBusEventEntry() ::= <<
       and processing_state != 'REMOVED'
       and creating_owner = :owner
       and (processing_owner IS NULL OR processing_available_date \<= :now)
-    <AND_CHECK_TENANT()>
     order by
       record_id asc
     limit :max
@@ -38,7 +37,6 @@ claimBusEvent() ::= <<
       and processing_state != 'PROCESSED'
       and processing_state != 'REMOVED'
       and (processing_owner IS NULL OR processing_available_date \<= :now)
-    <AND_CHECK_TENANT()>
     ;
 >>
 
@@ -48,7 +46,6 @@ clearBusEvent() ::= <<
       processing_state = 'PROCESSED'
     where
       record_id = :recordId
-    <AND_CHECK_TENANT()>
     ;
 >>
 
@@ -58,7 +55,6 @@ removeBusEventsById() ::= <<
       processing_state = 'REMOVED'
     where
       record_id = :recordId
-    <AND_CHECK_TENANT()>
     ;
 >>
 

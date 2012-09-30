@@ -26,7 +26,6 @@ getReadyNotifications() ::= <<
       and processing_state != 'REMOVED'
       and creating_owner = :owner
       and (processing_owner IS NULL OR processing_available_date \<= :now)
-    <AND_CHECK_TENANT()>
     order by
       effective_date asc
       , created_date asc
@@ -52,7 +51,6 @@ getNotificationForAccountAndDate() ::= <<
    from notifications
    where
    account_id = :accountId AND effective_date = :effectiveDate
-   <AND_CHECK_TENANT()>
    ;
 >>
 
@@ -62,8 +60,7 @@ removeNotification()  ::= <<
   processing_state = 'REMOVED'
     where
   id = :id
-  <AND_CHECK_TENANT()>
-; 
+;
 >>
 
 claimNotification() ::= <<
@@ -77,7 +74,6 @@ claimNotification() ::= <<
       and processing_state != 'PROCESSED'
       and processing_state != 'REMOVED'
       and (processing_owner IS NULL OR processing_available_date \<= :now)
-      <AND_CHECK_TENANT()>
     ;
 >>
 
@@ -87,7 +83,6 @@ clearNotification() ::= <<
       processing_state = 'PROCESSED'
     where
       id = :id
-    <AND_CHECK_TENANT()>
     ;
 >>
 
@@ -97,7 +92,6 @@ removeNotificationsByKey() ::= <<
       processing_state = 'REMOVED'
     where
       notification_key = :notificationKey
-    <AND_CHECK_TENANT()>
     ;
 >>
 
