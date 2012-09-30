@@ -70,6 +70,8 @@ public class TestChargeBacks extends InvoiceTestSuiteWithEmbeddedDB {
     private InvoiceSqlDao invoiceSqlDao;
     private InvoiceItemSqlDao invoiceItemSqlDao;
     private InvoicePaymentApi invoicePaymentApi;
+    private InternalCallContextFactory internalCallContextFactory;
+
     private final Clock clock = new ClockMock();
     private static final Currency CURRENCY = Currency.EUR;
 
@@ -88,7 +90,7 @@ public class TestChargeBacks extends InvoiceTestSuiteWithEmbeddedDB {
         final NextBillingDatePoster nextBillingDatePoster = new MockNextBillingDatePoster();
         final TagDefinitionDao tagDefinitionDao = new MockTagDefinitionDao();
         final TagDao tagDao = new MockTagDao();
-        final InternalCallContextFactory internalCallContextFactory = new InternalCallContextFactory(dbi, clock);
+        internalCallContextFactory = new InternalCallContextFactory(dbi, clock);
         final TagUserApi tagUserApi = new DefaultTagUserApi(internalCallContextFactory, tagDefinitionDao, tagDao);
         final InvoiceDao invoiceDao = new AuditedInvoiceDao(dbi, nextBillingDatePoster, tagUserApi, clock, Mockito.mock(Bus.class));
         invoicePaymentApi = new DefaultInvoicePaymentApi(invoiceDao, internalCallContextFactory);
@@ -106,7 +108,7 @@ public class TestChargeBacks extends InvoiceTestSuiteWithEmbeddedDB {
 
     @Test(groups = "slow")
     public void testCompleteChargeBack() throws InvoiceApiException {
-        final Invoice invoice = createAndPersistInvoice(invoiceSqlDao, invoiceItemSqlDao, clock, THIRTY, CURRENCY, callContext);
+        final Invoice invoice = createAndPersistInvoice(invoiceSqlDao, invoiceItemSqlDao, clock, THIRTY, CURRENCY, callContext, internalCallContextFactory);
         final InvoicePayment payment = createAndPersistPayment(invoicePaymentApi, clock, invoice.getId(), THIRTY, CURRENCY, callContext);
 
         // create a full charge back
@@ -119,7 +121,7 @@ public class TestChargeBacks extends InvoiceTestSuiteWithEmbeddedDB {
 
     @Test(groups = "slow")
     public void testPartialChargeBack() throws InvoiceApiException {
-        final Invoice invoice = createAndPersistInvoice(invoiceSqlDao, invoiceItemSqlDao, clock, THIRTY, CURRENCY, callContext);
+        final Invoice invoice = createAndPersistInvoice(invoiceSqlDao, invoiceItemSqlDao, clock, THIRTY, CURRENCY, callContext, internalCallContextFactory);
         final InvoicePayment payment = createAndPersistPayment(invoicePaymentApi, clock, invoice.getId(), THIRTY, CURRENCY, callContext);
 
         // create a partial charge back
@@ -133,7 +135,7 @@ public class TestChargeBacks extends InvoiceTestSuiteWithEmbeddedDB {
     @Test(groups = "slow", expectedExceptions = InvoiceApiException.class)
     public void testChargeBackLargerThanPaymentAmount() throws InvoiceApiException {
         try {
-            final Invoice invoice = createAndPersistInvoice(invoiceSqlDao, invoiceItemSqlDao, clock, THIRTY, CURRENCY, callContext);
+            final Invoice invoice = createAndPersistInvoice(invoiceSqlDao, invoiceItemSqlDao, clock, THIRTY, CURRENCY, callContext, internalCallContextFactory);
             final InvoicePayment payment = createAndPersistPayment(invoicePaymentApi, clock, invoice.getId(), THIRTY, CURRENCY, callContext);
 
             // create a large charge back
@@ -147,7 +149,7 @@ public class TestChargeBacks extends InvoiceTestSuiteWithEmbeddedDB {
     @Test(groups = "slow", expectedExceptions = InvoiceApiException.class)
     public void testNegativeChargeBackAmount() throws InvoiceApiException {
         try {
-            final Invoice invoice = createAndPersistInvoice(invoiceSqlDao, invoiceItemSqlDao, clock, THIRTY, CURRENCY, callContext);
+            final Invoice invoice = createAndPersistInvoice(invoiceSqlDao, invoiceItemSqlDao, clock, THIRTY, CURRENCY, callContext, internalCallContextFactory);
             final InvoicePayment payment = createAndPersistPayment(invoicePaymentApi, clock, invoice.getId(), THIRTY, CURRENCY, callContext);
 
             // create a partial charge back
@@ -159,7 +161,7 @@ public class TestChargeBacks extends InvoiceTestSuiteWithEmbeddedDB {
 
     @Test(groups = "slow")
     public void testGetAccountIdFromPaymentIdHappyPath() throws InvoiceApiException {
-        final Invoice invoice = createAndPersistInvoice(invoiceSqlDao, invoiceItemSqlDao, clock, THIRTY, CURRENCY, callContext);
+        final Invoice invoice = createAndPersistInvoice(invoiceSqlDao, invoiceItemSqlDao, clock, THIRTY, CURRENCY, callContext, internalCallContextFactory);
         final InvoicePayment payment = createAndPersistPayment(invoicePaymentApi, clock, invoice.getId(), THIRTY, CURRENCY, callContext);
         final UUID accountId = invoicePaymentApi.getAccountIdFromInvoicePaymentId(payment.getId(), callContext);
         assertEquals(accountId, invoice.getAccountId());
@@ -179,7 +181,7 @@ public class TestChargeBacks extends InvoiceTestSuiteWithEmbeddedDB {
 
     @Test(groups = "slow")
     public void testGetChargeBacksByAccountIdHappyPath() throws InvoiceApiException {
-        final Invoice invoice = createAndPersistInvoice(invoiceSqlDao, invoiceItemSqlDao, clock, THIRTY, CURRENCY, callContext);
+        final Invoice invoice = createAndPersistInvoice(invoiceSqlDao, invoiceItemSqlDao, clock, THIRTY, CURRENCY, callContext, internalCallContextFactory);
         final InvoicePayment payment = createAndPersistPayment(invoicePaymentApi, clock, invoice.getId(), THIRTY, CURRENCY, callContext);
 
         // create a partial charge back
@@ -200,7 +202,7 @@ public class TestChargeBacks extends InvoiceTestSuiteWithEmbeddedDB {
 
     @Test(groups = "slow")
     public void testGetChargeBacksByInvoicePaymentIdHappyPath() throws InvoiceApiException {
-        final Invoice invoice = createAndPersistInvoice(invoiceSqlDao, invoiceItemSqlDao, clock, THIRTY, CURRENCY, callContext);
+        final Invoice invoice = createAndPersistInvoice(invoiceSqlDao, invoiceItemSqlDao, clock, THIRTY, CURRENCY, callContext, internalCallContextFactory);
         final InvoicePayment payment = createAndPersistPayment(invoicePaymentApi, clock, invoice.getId(), THIRTY, CURRENCY, callContext);
 
         // create a partial charge back

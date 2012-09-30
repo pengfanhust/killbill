@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.mockito.Mockito;
-import org.skife.jdbi.v2.IDBI;
 
 import com.ning.billing.catalog.api.Currency;
 import com.ning.billing.invoice.api.Invoice;
@@ -36,13 +35,10 @@ import com.ning.billing.invoice.model.FixedPriceInvoiceItem;
 import com.ning.billing.util.callcontext.CallContext;
 import com.ning.billing.util.callcontext.InternalCallContextFactory;
 import com.ning.billing.util.clock.Clock;
-import com.ning.billing.util.clock.ClockMock;
 
 import com.google.common.collect.ImmutableList;
 
 public class InvoiceTestUtils {
-
-    private static final InternalCallContextFactory internalCallContextFactory = new InternalCallContextFactory(Mockito.mock(IDBI.class), new ClockMock());
 
     private InvoiceTestUtils() {}
 
@@ -51,9 +47,10 @@ public class InvoiceTestUtils {
                                                   final Clock clock,
                                                   final BigDecimal amount,
                                                   final Currency currency,
-                                                  final CallContext callContext) {
+                                                  final CallContext callContext,
+                                                  final InternalCallContextFactory internalCallContextFactory) {
         return createAndPersistInvoice(invoiceSqlDao, invoiceItemSqlDao, clock, ImmutableList.<BigDecimal>of(amount),
-                                       currency, callContext);
+                                       currency, callContext, internalCallContextFactory);
     }
 
     public static Invoice createAndPersistInvoice(final InvoiceSqlDao invoiceSqlDao,
@@ -61,7 +58,8 @@ public class InvoiceTestUtils {
                                                   final Clock clock,
                                                   final List<BigDecimal> amounts,
                                                   final Currency currency,
-                                                  final CallContext callContext) {
+                                                  final CallContext callContext,
+                                                  final InternalCallContextFactory internalCallContextFactory) {
         final Invoice invoice = Mockito.mock(Invoice.class);
         final UUID invoiceId = UUID.randomUUID();
         final UUID accountId = UUID.randomUUID();
