@@ -140,6 +140,7 @@ insertClaimedHistory() ::= <<
       ) values (
           :ownerId
         , :claimedDate
+        , :notificationId
         , :tenantRecordId
       );
 >>
