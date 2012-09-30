@@ -51,7 +51,7 @@ public class InternalCallContext extends InternalTenantContext {
     }
 
     public InternalCallContext(final Long tenantRecordId, @Nullable final Long accountRecordId, final CallContext callContext) {
-        this(accountRecordId, tenantRecordId, callContext.getUserToken(), callContext.getUserName(), callContext.getCallOrigin(),
+        this(tenantRecordId, accountRecordId, callContext.getUserToken(), callContext.getUserName(), callContext.getCallOrigin(),
              callContext.getUserType(), callContext.getReasonCode(), callContext.getComment(), callContext.getCreatedDate(),
              callContext.getUpdatedDate());
     }
