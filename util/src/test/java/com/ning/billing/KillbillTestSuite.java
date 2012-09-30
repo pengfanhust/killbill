@@ -30,6 +30,7 @@ import org.testng.annotations.BeforeMethod;
 import com.ning.billing.util.callcontext.CallContext;
 import com.ning.billing.util.callcontext.CallOrigin;
 import com.ning.billing.util.callcontext.InternalCallContext;
+import com.ning.billing.util.callcontext.InternalCallContextFactory;
 import com.ning.billing.util.callcontext.UserType;
 
 public class KillbillTestSuite {
@@ -39,7 +40,7 @@ public class KillbillTestSuite {
 
     private boolean hasFailed = false;
 
-    protected final InternalCallContext internalCallContext = new InternalCallContext(1242L, 1687L, UUID.randomUUID(),
+    protected final InternalCallContext internalCallContext = new InternalCallContext(InternalCallContextFactory.INTERNAL_TENANT_RECORD_ID, 1687L, UUID.randomUUID(),
                                                                                       UUID.randomUUID().toString(), CallOrigin.TEST,
                                                                                       UserType.TEST, "Testing", "This is a test",
                                                                                       new DateTime(DateTimeZone.UTC), new DateTime(DateTimeZone.UTC));

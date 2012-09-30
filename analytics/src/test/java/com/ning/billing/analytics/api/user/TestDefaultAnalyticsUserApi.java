@@ -86,7 +86,7 @@ public class TestDefaultAnalyticsUserApi extends AnalyticsTestSuiteWithEmbeddedD
 
         final AnalyticsDao analyticsDao = new DefaultAnalyticsDao(accountSqlDao, subscriptionTransitionSqlDao, invoiceSqlDao,
                                                                   invoiceItemSqlDao, accountTagSqlDao, overdueStatusSqlDao, invoicePaymentSqlDao);
-        analyticsUserApi = new DefaultAnalyticsUserApi(analyticsDao, new InternalCallContextFactory(clock));
+        analyticsUserApi = new DefaultAnalyticsUserApi(analyticsDao, new InternalCallContextFactory(dbi, clock));
     }
 
     @Test(groups = "slow")

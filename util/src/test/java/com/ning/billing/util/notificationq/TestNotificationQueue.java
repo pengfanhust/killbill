@@ -146,7 +146,7 @@ public class TestNotificationQueue extends UtilTestSuiteWithEmbeddedDB {
                                                                                 }
                                                                             },
                                                                             getNotificationConfig(false, 100, 1, 10000),
-                                                                            new InternalCallContextFactory(clock));
+                                                                            new InternalCallContextFactory(dbi, clock));
 
         queue.startQueue();
 
@@ -202,7 +202,7 @@ public class TestNotificationQueue extends UtilTestSuiteWithEmbeddedDB {
                                                                                 }
                                                                             },
                                                                             getNotificationConfig(false, 100, 10, 10000),
-                                                                            new InternalCallContextFactory(clock));
+                                                                            new InternalCallContextFactory(dbi, clock));
 
         queue.startQueue();
 
@@ -281,7 +281,7 @@ public class TestNotificationQueue extends UtilTestSuiteWithEmbeddedDB {
         final Map<NotificationKey, Boolean> expectedNotificationsFred = new TreeMap<NotificationKey, Boolean>();
         final Map<NotificationKey, Boolean> expectedNotificationsBarney = new TreeMap<NotificationKey, Boolean>();
 
-        final NotificationQueueService notificationQueueService = new DefaultNotificationQueueService(dbi, clock, new InternalCallContextFactory(clock));
+        final NotificationQueueService notificationQueueService = new DefaultNotificationQueueService(dbi, clock, new InternalCallContextFactory(dbi, clock));
 
         final NotificationConfig config = new NotificationConfig() {
             @Override
@@ -399,7 +399,7 @@ public class TestNotificationQueue extends UtilTestSuiteWithEmbeddedDB {
                                                                                 }
                                                                             },
                                                                             getNotificationConfig(false, 100, 10, 10000),
-                                                                            new InternalCallContextFactory(clock));
+                                                                            new InternalCallContextFactory(dbi, clock));
 
         queue.startQueue();
 

@@ -92,7 +92,7 @@ public class TestOverdueCheckNotifier extends OverdueTestSuiteWithEmbeddedDB {
         UUID latestSubscriptionId = null;
 
         public OverdueListenerMock() {
-            super(null, new InternalCallContextFactory(new ClockMock()));
+            super(null, new InternalCallContextFactory(getMysqlTestingHelper().getDBI(), new ClockMock()));
         }
 
         @Override

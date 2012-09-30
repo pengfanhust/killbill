@@ -187,6 +187,10 @@ public class MysqlTestingHelper {
     }
 
     public void initDb() throws IOException {
+        // We always want the accounts and tenants table
+        initDb("drop table if exists accounts; create table accounts(record_id int(11) unsigned not null auto_increment, id char(36) not null, primary key(record_id)) engine=innodb;");
+        initDb("drop table if exists tenants; create table tenants(record_id int(11) unsigned not null auto_increment, id char(36) not null, primary key(record_id)) engine=innodb;");
+
         for (final String pack : new String[]{"account", "analytics", "entitlement", "util", "payment", "invoice", "junction", "tenant"}) {
             final String ddl;
             try {

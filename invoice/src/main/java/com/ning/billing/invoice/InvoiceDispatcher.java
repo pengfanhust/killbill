@@ -35,7 +35,6 @@ import com.ning.billing.account.api.AccountApiException;
 import com.ning.billing.account.api.AccountUserApi;
 import com.ning.billing.account.api.BillCycleDay;
 import com.ning.billing.catalog.api.Currency;
-import com.ning.billing.entitlement.api.billing.BillingEvent;
 import com.ning.billing.entitlement.api.billing.EntitlementBillingApiException;
 import com.ning.billing.entitlement.api.user.EffectiveSubscriptionEvent;
 import com.ning.billing.invoice.api.Invoice;
@@ -153,7 +152,7 @@ public class InvoiceDispatcher {
 
             List<Invoice> invoices = new ArrayList<Invoice>();
             if (!billingEvents.isAccountAutoInvoiceOff()) {
-                invoices = invoiceDao.getInvoicesByAccount(accountId, internalCallContextFactory.createInternalTenantContext(account.getId())); //no need to fetch, invoicing is off on this account
+                invoices = invoiceDao.getInvoicesByAccount(accountId, internalCallContextFactory.createInternalTenantContext(account.getId(), context)); //no need to fetch, invoicing is off on this account
             }
 
             final Currency targetCurrency = account.getCurrency();

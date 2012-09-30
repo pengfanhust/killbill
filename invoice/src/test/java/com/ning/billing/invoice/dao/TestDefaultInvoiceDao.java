@@ -80,7 +80,7 @@ public class TestDefaultInvoiceDao extends InvoiceTestSuite {
         final NextBillingDatePoster poster = Mockito.mock(NextBillingDatePoster.class);
         final TagDefinitionDao tagDefinitionDao = new MockTagDefinitionDao();
         final TagDao tagDao = new MockTagDao();
-        tagUserApi = new DefaultTagUserApi(new InternalCallContextFactory(new ClockMock()), tagDefinitionDao, tagDao);
+        tagUserApi = new DefaultTagUserApi(new InternalCallContextFactory(Mockito.mock(IDBI.class), new ClockMock()), tagDefinitionDao, tagDao);
         dao = new AuditedInvoiceDao(idbi, poster, tagUserApi, Mockito.mock(Clock.class), Mockito.mock(Bus.class));
     }
 

@@ -82,7 +82,7 @@ public class TestBusinessTagRecorder extends AnalyticsTestSuiteWithEmbeddedDB {
         final AccountEmailDao accountEmailDao = new AuditedAccountEmailDao(dbi);
         final DefaultClock clock = new DefaultClock();
         callContextFactory = new DefaultCallContextFactory(clock);
-        final InternalCallContextFactory internalCallContextFactory = new InternalCallContextFactory(clock);
+        final InternalCallContextFactory internalCallContextFactory = new InternalCallContextFactory(dbi, clock);
         accountUserApi = new DefaultAccountUserApi(callContextFactory, internalCallContextFactory, accountDao, accountEmailDao);
         final CatalogService catalogService = new DefaultCatalogService(Mockito.mock(CatalogConfig.class), Mockito.mock(VersionedCatalogLoader.class));
         final AddonUtils addonUtils = new AddonUtils(catalogService);

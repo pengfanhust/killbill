@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.mockito.Mockito;
+import org.skife.jdbi.v2.IDBI;
 
 import com.ning.billing.catalog.api.Currency;
 import com.ning.billing.invoice.api.Invoice;
@@ -41,7 +42,7 @@ import com.google.common.collect.ImmutableList;
 
 public class InvoiceTestUtils {
 
-    private static final InternalCallContextFactory internalCallContextFactory = new InternalCallContextFactory(new ClockMock());
+    private static final InternalCallContextFactory internalCallContextFactory = new InternalCallContextFactory(Mockito.mock(IDBI.class), new ClockMock());
 
     private InvoiceTestUtils() {}
 

@@ -96,7 +96,7 @@ public class TestInvoiceDispatcher extends InvoicingTestBase {
     @Inject
     private Clock clock;
 
-    private final InternalCallContextFactory internalCallContextFactory = new InternalCallContextFactory(clock);
+    private final InternalCallContextFactory internalCallContextFactory = new InternalCallContextFactory(getMysqlTestingHelper().getDBI(), clock);
 
     private AccountUserApi accountUserApi;
     private Account account;
@@ -156,12 +156,12 @@ public class TestInvoiceDispatcher extends InvoicingTestBase {
         final InvoiceNotifier invoiceNotifier = new NullInvoiceNotifier();
         final InvoiceDispatcher dispatcher = new InvoiceDispatcher(generator, accountUserApi, billingApi, invoiceDao,
                                                                    invoiceNotifier, locker, busService.getBus(),
-                                                                   clock, new InternalCallContextFactory(clock));
+                                                                   clock, new InternalCallContextFactory(getMysqlTestingHelper().getDBI(), clock));
 
         Invoice invoice = dispatcher.processAccount(accountId, target, true, callContext);
         Assert.assertNotNull(invoice);
 
-        final InternalTenantContext internalTenantContext = internalCallContextFactory.createInternalTenantContext(accountId);
+        final InternalTenantContext internalTenantContext = internalCallContextFactory.createInternalTenantContext(accountId, callContext);
         List<Invoice> invoices = invoiceDao.getInvoicesByAccount(accountId, internalTenantContext);
         Assert.assertEquals(invoices.size(), 0);
 

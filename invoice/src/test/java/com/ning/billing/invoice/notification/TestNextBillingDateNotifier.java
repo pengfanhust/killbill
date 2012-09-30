@@ -146,7 +146,7 @@ public class TestNextBillingDateNotifier extends InvoiceTestSuiteWithEmbeddedDB 
         final CallContextFactory factory = new DefaultCallContextFactory(clock);
         listener = new InvoiceListenerMock(factory, dispatcher);
         notifier = new DefaultNextBillingDateNotifier(notificationQueueService, g.getInstance(InvoiceConfig.class), entitlementUserApi,
-                                                      listener, new InternalCallContextFactory(clock));
+                                                      listener, new InternalCallContextFactory(dbi, clock));
     }
 
     @Test(groups = "slow")
@@ -156,7 +156,7 @@ public class TestNextBillingDateNotifier extends InvoiceTestSuiteWithEmbeddedDB 
         final UUID subscriptionId = new UUID(0L, 1L);
         final DateTime now = new DateTime();
         final DateTime readyTime = now.plusMillis(2000);
-        final NextBillingDatePoster poster = new DefaultNextBillingDatePoster(notificationQueueService, new InternalCallContextFactory(clock));
+        final NextBillingDatePoster poster = new DefaultNextBillingDatePoster(notificationQueueService, new InternalCallContextFactory(getMysqlTestingHelper().getDBI(), clock));
 
         eventBus.start();
         notifier.initialize();
