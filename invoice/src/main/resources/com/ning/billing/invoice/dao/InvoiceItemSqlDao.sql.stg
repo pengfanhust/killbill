@@ -111,7 +111,7 @@ insertAuditFromTransaction() ::= <<
 test() ::= <<
   SELECT 1
   FROM invoice_items
-  <AND_CHECK_TENANT()>
+  WHERE <CHECK_TENANT()>
   ;
 >>
 ;
