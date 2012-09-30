@@ -74,7 +74,7 @@ addHistoryFromTransaction() ::= <<
 
 getMaxHistoryRecordId() ::= <<
     SELECT MAX(history_record_id)
-    FROM tag_history,
+    FROM tag_history
     WHERE <CHECK_TENANT()>
     ;
 >>
