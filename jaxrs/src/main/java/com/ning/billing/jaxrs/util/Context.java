@@ -16,8 +16,6 @@
 
 package com.ning.billing.jaxrs.util;
 
-import java.util.UUID;
-
 import javax.servlet.ServletRequest;
 
 import com.ning.billing.jaxrs.resources.JaxrsResource;
@@ -48,19 +46,29 @@ public class Context {
             throws IllegalArgumentException {
         try {
             Preconditions.checkNotNull(createdBy, String.format("Header %s needs to be set", JaxrsResource.HDR_CREATED_BY));
-            return contextFactory.createCallContext(createdBy, origin, userType, reason, comment, UUID.randomUUID());
+            final Tenant tenant = getTenantFromRequest(request);
+            return contextFactory.createCallContext(createdBy, origin, userType, reason, comment, tenant == null ? null : tenant.getId());
         } catch (NullPointerException e) {
             throw new IllegalArgumentException(e.getMessage());
         }
     }
 
     public TenantContext createContext(final ServletRequest request) {
-        final Object tenantObject = request.getAttribute("killbill_tenant");
-        if (tenantObject == null) {
+        final Tenant tenant = getTenantFromRequest(request);
+        if (tenant == null) {
             // Multi-tenancy may not have been configured - default to "default" tenant (see InternalCallContextFactory)
             return contextFactory.createTenantContext(null);
         } else {
-            return contextFactory.createTenantContext(((Tenant) tenantObject).getId());
+            return contextFactory.createTenantContext(tenant.getId());
+        }
+    }
+
+    private Tenant getTenantFromRequest(final ServletRequest request) {
+        final Object tenantObject = request.getAttribute("killbill_tenant");
+        if (tenantObject == null) {
+            return null;
+        } else {
+            return (Tenant) tenantObject;
         }
     }
 }

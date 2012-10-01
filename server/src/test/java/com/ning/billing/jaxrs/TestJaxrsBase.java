@@ -229,7 +229,7 @@ public class TestJaxrsBase extends KillbillClient {
         this.clock = (ClockMock) listener.getClock();
     }
 
-    private void loadConfig() {
+    protected void loadConfig() {
         if (config == null) {
             config = new ConfigurationObjectFactory(System.getProperties()).build(CoreConfig.class);
         }

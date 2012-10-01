@@ -30,6 +30,7 @@ import org.testng.annotations.Test;
 
 import com.ning.billing.jaxrs.TestJaxrsBase;
 import com.ning.billing.jaxrs.json.AccountJson;
+import com.ning.billing.server.listeners.KillbillGuiceListener;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClientConfig;
 import com.ning.http.client.Realm;
@@ -39,6 +40,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 public class TestTenantFilter extends TestJaxrsBase {
+
+    @Override
+    protected void loadConfig() {
+        System.setProperty(KillbillGuiceListener.KILLBILL_MULTITENANT_PROPERTY, "true");
+        super.loadConfig();
+    }
 
     @Override
     protected Iterable<EventListener> getListeners() {
@@ -88,14 +95,12 @@ public class TestTenantFilter extends TestJaxrsBase {
         final AccountJson account2 = createAccount();
         Assert.assertEquals(getAccountByExternalKey(account2.getExternalKey()), account2);
 
-        // Below - TODO
-
         // We should not be able to retrieve the first account as tenant2
-        //Assert.assertEquals(getAccountByExternalKeyNoValidation(account1.getExternalKey()).getStatusCode(), Status.NOT_FOUND.getStatusCode());
+        Assert.assertEquals(getAccountByExternalKeyNoValidation(account1.getExternalKey()).getStatusCode(), Status.NOT_FOUND.getStatusCode());
 
         // Same for tenant1 and account2
-        //loginTenant(apiKeyTenant1, apiSecretTenant1);
-        //Assert.assertEquals(getAccountByExternalKeyNoValidation(account2.getExternalKey()).getStatusCode(), Status.NOT_FOUND.getStatusCode());
+        loginTenant(apiKeyTenant1, apiSecretTenant1);
+        Assert.assertEquals(getAccountByExternalKeyNoValidation(account2.getExternalKey()).getStatusCode(), Status.NOT_FOUND.getStatusCode());
     }
 
     private void loginTenant(final String apiKey, final String apiSecret) {
