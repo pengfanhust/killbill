@@ -89,10 +89,10 @@ public class AuditedInvoiceDao implements InvoiceDao {
 
     @Inject
     public AuditedInvoiceDao(final IDBI dbi,
-                             final NextBillingDatePoster nextBillingDatePoster,
-                             final TagUserApi tagUserApi,
-                             final Clock clock,
-                             final Bus eventBus) {
+            final NextBillingDatePoster nextBillingDatePoster,
+            final TagUserApi tagUserApi,
+            final Clock clock,
+            final Bus eventBus) {
         this.invoiceSqlDao = dbi.onDemand(InvoiceSqlDao.class);
         this.invoicePaymentSqlDao = dbi.onDemand(InvoicePaymentSqlDao.class);
         this.invoiceItemSqlDao = dbi.onDemand(InvoiceItemSqlDao.class);
@@ -363,6 +363,8 @@ public class AuditedInvoiceDao implements InvoiceDao {
                                        final Map<UUID, BigDecimal> invoiceItemIdsWithNullAmounts, final UUID paymentCookieId,
                                        final InternalCallContext context)
             throws InvoiceApiException {
+        final boolean isInvoiceItemAdjusted = isInvoiceAdjusted && invoiceItemIdsWithNullAmounts.size() > 0;
+
         return invoicePaymentSqlDao.inTransaction(new Transaction<InvoicePayment, InvoicePaymentSqlDao>() {
             @Override
             public InvoicePayment inTransaction(final InvoicePaymentSqlDao transactional, final TransactionStatus status) throws Exception {
@@ -392,8 +394,8 @@ public class AuditedInvoiceDao implements InvoiceDao {
                 }
 
                 final InvoicePayment refund = new DefaultInvoicePayment(UUID.randomUUID(), InvoicePaymentType.REFUND, paymentId,
-                                                                        payment.getInvoiceId(), context.getCreatedDate(), requestedPositiveAmount.negate(),
-                                                                        payment.getCurrency(), paymentCookieId, payment.getId());
+                        payment.getInvoiceId(), context.getCreatedDate(), requestedPositiveAmount.negate(),
+                        payment.getCurrency(), paymentCookieId, payment.getId());
                 transactional.create(refund, context);
                 final Long refundRecordId = transactional.getRecordId(refund.getId().toString(), context);
                 audits.add(new EntityAudit(TableName.REFUNDS, refundRecordId, ChangeType.INSERT));
@@ -412,7 +414,7 @@ public class AuditedInvoiceDao implements InvoiceDao {
                 // At this point, we created the refund which made the invoice balance positive and applied any existing
                 // available CBA to that invoice.
                 // We now need to adjust the invoice and/or invoice items if needed and specified.
-                if (isInvoiceAdjusted && invoiceItemIdsWithAmounts.size() == 0) {
+                if (isInvoiceAdjusted && !isInvoiceItemAdjusted) {
                     // Invoice adjustment
                     final BigDecimal maxBalanceToAdjust = (invoiceBalanceAfterRefund.compareTo(BigDecimal.ZERO) <= 0) ? BigDecimal.ZERO : invoiceBalanceAfterRefund;
                     final BigDecimal requestedPositiveAmountToAdjust = requestedPositiveAmount.compareTo(maxBalanceToAdjust) > 0 ? maxBalanceToAdjust : requestedPositiveAmount;
@@ -479,12 +481,40 @@ public class AuditedInvoiceDao implements InvoiceDao {
 
         for (final UUID invoiceItemId : invoiceItemIdsWithNullAmounts.keySet()) {
             final BigDecimal adjAmount = Objects.firstNonNull(invoiceItemIdsWithNullAmounts.get(invoiceItemId),
-                                                              getInvoiceItemAmountForId(invoice, invoiceItemId));
-            invoiceItemIdsWithAmountsBuilder.put(invoiceItemId, adjAmount);
+                    getInvoiceItemAmountForId(invoice, invoiceItemId));
+            final BigDecimal adjAmountRemainingAfterRepair = computeItemAdjustmentAmount(invoiceItemId, adjAmount, invoice.getInvoiceItems());
+            if (adjAmountRemainingAfterRepair.compareTo(BigDecimal.ZERO) > 0) {
+                invoiceItemIdsWithAmountsBuilder.put(invoiceItemId,  adjAmountRemainingAfterRepair);
+            }
         }
 
         return invoiceItemIdsWithAmountsBuilder.build();
     }
+
+    /**
+     *
+     * @param invoiceItem                          item we are adjusting
+     * @param requestedPositiveAmountToAdjust      amount we are adjusting for that item
+     * @param invoiceItems                         list of all invoice items on this invoice
+     * @return                                     the amount we should really adjust based on whether or not the item got repaired
+     */
+    private BigDecimal computeItemAdjustmentAmount(final UUID invoiceItem, final BigDecimal requestedPositiveAmountToAdjust, final List<InvoiceItem> invoiceItems) {
+
+        BigDecimal positiveRepairedAmount = BigDecimal.ZERO;
+
+        final Collection<InvoiceItem> repairedItems = Collections2.filter(invoiceItems, new Predicate<InvoiceItem>() {
+            @Override
+            public boolean apply(@Nullable InvoiceItem input) {
+                return (input.getInvoiceItemType() == InvoiceItemType.REPAIR_ADJ && input.getLinkedItemId().equals(invoiceItem));
+            }
+        });
+        for (InvoiceItem cur : repairedItems) {
+            // Repair item are negative so we negate to make it positive
+            positiveRepairedAmount = positiveRepairedAmount.add(cur.getAmount().negate());
+        }
+        return (positiveRepairedAmount.compareTo(requestedPositiveAmountToAdjust) >= 0) ? BigDecimal.ZERO : requestedPositiveAmountToAdjust.subtract(positiveRepairedAmount);
+    }
+
 
     private BigDecimal getInvoiceItemAmountForId(final Invoice invoice, final UUID invoiceItemId) throws InvoiceApiException {
         for (final InvoiceItem invoiceItem : invoice.getInvoiceItems()) {
@@ -539,7 +569,7 @@ public class AuditedInvoiceDao implements InvoiceDao {
                     throw new InvoiceApiException(ErrorCode.INVOICE_PAYMENT_NOT_FOUND, invoicePaymentId.toString());
                 } else {
                     final InvoicePayment chargeBack = new DefaultInvoicePayment(UUID.randomUUID(), InvoicePaymentType.CHARGED_BACK, payment.getPaymentId(),
-                                                                                payment.getInvoiceId(), context.getCreatedDate(), requestedChargedBackAmout.negate(), payment.getCurrency(), null, payment.getId());
+                            payment.getInvoiceId(), context.getCreatedDate(), requestedChargedBackAmout.negate(), payment.getCurrency(), null, payment.getId());
                     transactional.create(chargeBack, context);
 
                     // Add audit
@@ -618,8 +648,8 @@ public class AuditedInvoiceDao implements InvoiceDao {
                 }
 
                 final InvoiceItem externalCharge = new ExternalChargeInvoiceItem(invoiceIdForExternalCharge, accountId,
-                                                                                 bundleId, description,
-                                                                                 effectiveDate, amount, currency);
+                        bundleId, description,
+                        effectiveDate, amount, currency);
 
                 final InvoiceItemSqlDao transInvoiceItemDao = transactional.become(InvoiceItemSqlDao.class);
                 transInvoiceItemDao.create(externalCharge, context);
@@ -703,7 +733,6 @@ public class AuditedInvoiceDao implements InvoiceDao {
                 final InvoiceItem invoiceItemAdjustment = createAdjustmentItem(transactional, invoiceId, invoiceItemId, positiveAdjAmount,
                                                                                currency, effectiveDate, context);
                 insertItemAndAddCBAIfNeeded(transactional, invoiceItemAdjustment, audits, context);
-
                 notifyBusOfInvoiceAdjustment(transactional, invoiceId, accountId, context.getUserToken());
 
                 // Save audit logs
@@ -736,7 +765,7 @@ public class AuditedInvoiceDao implements InvoiceDao {
 
                 // First, adjust the same invoice with the CBA amount to "delete"
                 final InvoiceItem cbaAdjItem = new CreditBalanceAdjInvoiceItem(invoice.getId(), invoice.getAccountId(), context.getCreatedDate().toLocalDate(),
-                                                                               cbaItem.getId(), cbaItem.getAmount().negate(), cbaItem.getCurrency());
+                        cbaItem.getId(), cbaItem.getAmount().negate(), cbaItem.getCurrency());
                 invoiceItemSqlDao.create(cbaAdjItem, context);
                 final Long cbaAdjItemRecordId = invoiceItemSqlDao.getRecordId(cbaAdjItem.getId().toString(), context);
                 audits.add(new EntityAudit(TableName.INVOICE_ITEMS, cbaAdjItemRecordId, ChangeType.INSERT));
@@ -774,7 +803,7 @@ public class AuditedInvoiceDao implements InvoiceDao {
                         for (final InvoiceItem cbaUsed : Lists.reverse(invoiceFollowing.getInvoiceItems())) {
                             // Ignore non CBA items or credits (CBA >= 0)
                             if (!InvoiceItemType.CBA_ADJ.equals(cbaUsed.getInvoiceItemType()) ||
-                                cbaUsed.getAmount().compareTo(BigDecimal.ZERO) >= 0) {
+                                    cbaUsed.getAmount().compareTo(BigDecimal.ZERO) >= 0) {
                                 continue;
                             }
 
@@ -796,7 +825,7 @@ public class AuditedInvoiceDao implements InvoiceDao {
 
                         // Add the adjustment on that invoice
                         final InvoiceItem nextCBAAdjItem = new CreditBalanceAdjInvoiceItem(invoiceFollowing.getId(), invoice.getAccountId(), context.getCreatedDate().toLocalDate(),
-                                                                                           cbaItem.getId(), positiveCBAAdjItemAmount, cbaItem.getCurrency());
+                                cbaItem.getId(), positiveCBAAdjItemAmount, cbaItem.getCurrency());
                         invoiceItemSqlDao.create(nextCBAAdjItem, context);
                         final Long nextCBAAdjItemRecordId = invoiceItemSqlDao.getRecordId(nextCBAAdjItem.getId().toString(), context);
                         audits.add(new EntityAudit(TableName.INVOICE_ITEMS, nextCBAAdjItemRecordId, ChangeType.INSERT));
@@ -895,7 +924,7 @@ public class AuditedInvoiceDao implements InvoiceDao {
         if (invoice.getBalance().compareTo(BigDecimal.ZERO) < 0) {
             final InvoiceItemSqlDao transInvoiceItemDao = transactional.become(InvoiceItemSqlDao.class);
             final InvoiceItem cbaAdjItem = new CreditBalanceAdjInvoiceItem(invoice.getId(), invoice.getAccountId(), context.getCreatedDate().toLocalDate(),
-                                                                           invoice.getBalance().negate(), invoice.getCurrency());
+                    invoice.getBalance().negate(), invoice.getCurrency());
             transInvoiceItemDao.create(cbaAdjItem, context);
             final Long cbaAdjItemRecordId = transInvoiceItemDao.getRecordId(cbaAdjItem.getId().toString(), context);
             audits.add(new EntityAudit(TableName.INVOICE_ITEMS, cbaAdjItemRecordId, ChangeType.INSERT));
@@ -966,8 +995,8 @@ public class AuditedInvoiceDao implements InvoiceDao {
             if (item.getInvoiceItemType() == InvoiceItemType.RECURRING) {
                 final RecurringInvoiceItem recurringInvoiceItem = (RecurringInvoiceItem) item;
                 if ((recurringInvoiceItem.getEndDate() != null) &&
-                    (recurringInvoiceItem.getAmount() == null ||
-                     recurringInvoiceItem.getAmount().compareTo(BigDecimal.ZERO) >= 0)) {
+                        (recurringInvoiceItem.getAmount() == null ||
+                        recurringInvoiceItem.getAmount().compareTo(BigDecimal.ZERO) >= 0)) {
                     subscriptionForNextNotification = recurringInvoiceItem.getSubscriptionId();
                     shouldBeNotified = true;
                     break;
