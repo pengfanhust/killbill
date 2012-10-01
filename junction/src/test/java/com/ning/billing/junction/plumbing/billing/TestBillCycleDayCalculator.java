@@ -70,7 +70,7 @@ public class TestBillCycleDayCalculator extends JunctionTestSuite {
         final Account account = Mockito.mock(Account.class);
         Mockito.when(account.getTimeZone()).thenReturn(accountTimeZone);
         final BillCycleDay billCycleDay = billCycleDayCalculator.calculateBcdForAlignment(BillingAlignment.BUNDLE, bundle, subscription,
-                                                                                          account, catalog, null);
+                                                                                          account, catalog, null, callContext);
 
         Assert.assertEquals(billCycleDay.getDayOfMonthUTC(), expectedBCDUTC);
     }

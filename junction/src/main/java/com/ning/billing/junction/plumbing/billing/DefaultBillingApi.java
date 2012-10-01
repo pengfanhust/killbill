@@ -148,7 +148,7 @@ public class DefaultBillingApi implements BillingApi {
         for (final Subscription subscription : subscriptions) {
             for (final EffectiveSubscriptionEvent transition : subscription.getBillingTransitions()) {
                 try {
-                    final BillCycleDay bcd = bcdCalculator.calculateBcd(bundle, subscription, transition, account);
+                    final BillCycleDay bcd = bcdCalculator.calculateBcd(bundle, subscription, transition, account, context);
 
                     if (account.getBillCycleDay().getDayOfMonthUTC() == 0) {
                         final MutableAccountData modifiedData = account.toMutableAccountData();
