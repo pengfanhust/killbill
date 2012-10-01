@@ -13,6 +13,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+
 package com.ning.billing.payment.core;
 
 import java.util.Map;
@@ -97,7 +98,7 @@ public abstract class ProcessorBase {
     }
 
     protected PaymentPluginApi getPaymentProviderPlugin(final UUID paymentMethodId, final InternalTenantContext context) throws PaymentApiException {
-        final PaymentMethodModelDao methodDao = paymentDao.getPaymentMethod(paymentMethodId, context);
+        final PaymentMethodModelDao methodDao = paymentDao.getPaymentMethodIncludedDeleted(paymentMethodId, context);
         if (methodDao == null) {
             log.error("PaymentMethod dpes not exist", paymentMethodId);
             throw new PaymentApiException(ErrorCode.PAYMENT_NO_SUCH_PAYMENT_METHOD, paymentMethodId);
@@ -135,11 +136,10 @@ public abstract class ProcessorBase {
         }
     }
 
-
     public interface WithAccountLockCallback<T> {
+
         public T doOperation() throws PaymentApiException;
     }
-
 
     public static class CallableWithAccountLock<T> implements Callable<T> {
 

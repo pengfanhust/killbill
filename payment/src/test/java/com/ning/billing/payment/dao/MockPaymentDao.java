@@ -197,4 +197,9 @@ public class MockPaymentDao implements PaymentDao {
     public PaymentModelDao getLastPaymentForPaymentMethod(final UUID accountId, final UUID paymentMethodId, final InternalTenantContext context) {
         return null;
     }
+
+    @Override
+    public PaymentMethodModelDao getPaymentMethodIncludedDeleted(final UUID paymentMethodId, final InternalTenantContext context) {
+        return getPaymentMethod(paymentMethodId, context);
+    }
 }

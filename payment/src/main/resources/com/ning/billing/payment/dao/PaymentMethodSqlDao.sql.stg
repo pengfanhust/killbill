@@ -45,6 +45,12 @@ getPaymentMethod() ::= <<
     ;
 >>
 
+getPaymentMethodIncludedDelete() ::= <<
+    SELECT <paymentMethodFields()>
+      FROM payment_methods
+    WHERE id = :id;
+>>
+
 getPaymentMethods() ::= <<
     SELECT <paymentMethodFields()>
       FROM payment_methods

@@ -329,6 +329,11 @@ public class AuditedPaymentDao implements PaymentDao {
         return getPaymentMethodInTransaction(paymentMethodSqlDao, paymentMethodId, context);
     }
 
+    @Override
+    public PaymentMethodModelDao getPaymentMethodIncludedDeleted(final UUID paymentMethodId, final InternalTenantContext context) {
+        return paymentMethodSqlDao.getPaymentMethodIncludedDelete(paymentMethodId.toString(), context);
+    }
+
     private PaymentMethodModelDao getPaymentMethodInTransaction(final PaymentMethodSqlDao transactional, final UUID paymentMethodId, final InternalTenantContext context) {
         return transactional.getPaymentMethod(paymentMethodId.toString(), context);
     }
